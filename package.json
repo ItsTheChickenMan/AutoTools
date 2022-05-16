@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/ItsTheChickenMan/AutoTools/issues"
   },
-  "homepage": "https://github.com/ItsTheChickenMan/AutoTools#readme"
+  "homepage": "https://github.com/ItsTheChickenMan/AutoTools#readme",
+  "dependencies": {
+    "express": "^4.18.1"
+  }
 }

@@ -13,13 +13,16 @@ let borderWidth = 2;
 
 // context menu which appears when the user right clicks on the canvas
 let contextMenu = new Menu({
-	itemNames: ["New Node", "Delete Node"],
+	itemNames: ["New Path", "End Path", "Delete Path"],
 	itemActions: [
 		function(){
-			rect(mouseX, mouseY, 10, 10);
+			mainPath = new Path();
 		},
 		function(){
-			alert("nah");
+			endPath();
+		},
+		function(){
+			mainPath.clear();
 		}
 	]
 });
@@ -62,6 +65,9 @@ function draw(){
 	
 	// draw field
 	drawField();
+	
+	// draw existing path
+	drawAndUpdatePath();
 }
 
 // UTILS

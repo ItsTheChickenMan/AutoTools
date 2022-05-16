@@ -1,4 +1,4 @@
-// tiny side thing for creating menubars, just so it looks a little more homemade
+// tiny side thing for creating menus/menu buttons/menubars
 
 /**
 	*	@brief A menu similar to the right-click context menu
@@ -6,6 +6,7 @@
 class Menu {
 	/**
 		*	@brief Constructs a new Menu from the options object provided
+		*
 		*	options: {
 		*		itemNames: ["", ""], // ordered list of the item names on the context menu
 		*		itemActions: [ // ordered list of the actions taken when items are pressed
@@ -20,7 +21,7 @@ class Menu {
 		
 		// stylize item container
 		this.itemContainer.classList.add("menu-item-container");
-		this.hide(); // hide initially, but show whenever the user presses mainButton
+		this.hide(); // hide initially
 		
 		// create menu items
 		for(let i = 0; i < options.itemNames.length; i++){
