@@ -1,0 +1,20 @@
+{
+  "name": "autotools",
+  "version": "0.1.0",
+  "description": "GUI for writing autonomous paths for FTC bots",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ItsTheChickenMan/AutoTools.git"
+  },
+  "author": "Phoenix Dalla Costa",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ItsTheChickenMan/AutoTools/issues"
+  },
+  "homepage": "https://github.com/ItsTheChickenMan/AutoTools#readme"
+}
