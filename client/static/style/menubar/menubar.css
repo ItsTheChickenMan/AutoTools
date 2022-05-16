@@ -1,0 +1,55 @@
+/* CSS for horizontal menubars */
+.menubar-horizontal {
+	display: flex;
+	flex-direction: row;
+}
+
+/* CSS for vertical menubars */
+.menubar-vertical {
+	display: flex;
+	flex-direction: column;
+}
+
+/* CSS for items in menubars */
+.menubar-item {
+	background: white;
+	border: solid;
+	border-width: 1px;
+	border-color: white;
+	font-size: 16px;
+	padding-left: 10px;
+	padding-right: 10px;
+	text-align: left;
+}
+
+.menubar-item:hover {
+	border-color: #CAEDFC;
+	background-color: #DBF4FF;
+}
+
+/* CSS for menu item containers */
+.menu-item-container {
+	display: flex;
+	flex-direction: column;
+	border-style: solid;
+	border-width: 1px;
+	position: fixed;
+	margin: 0px;
+}
+
+/* CSS for menu items */
+.menu-item {
+	border-style: none;
+	background-color: white;
+	color: black;
+	margin: 0px;
+	width: 150px;
+	text-align: left;
+	padding-left: 10px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+.menu-item:hover {
+	background-color: #DBF4FF;
+}
