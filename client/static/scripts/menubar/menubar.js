@@ -8,6 +8,47 @@ function defaultAction(){
 	console.warn("No action is defined for this button.  You should define one in the itemActions property when constructing this Menu.");
 }
 
+
+/**
+	*	@brief A prompt similar to a menu, but much more customizable
+*/
+class Prompt {
+	/**
+		*	@brief Constructs a new Prompt from the options object provided
+		*
+		*	options: {
+		*		htmlContent: <html>, // string html for the prompt
+		*	}
+	*/
+	constructor(options){
+		this.htmlContent = options.htmlContent || "<div></div>";
+		
+		this.itemContainer = document.createElement("div");
+		
+		
+	}
+	
+	// show the menu at the coordinates
+	show(x, y){
+		this.itemContainer.style["display"] = "flex";
+		this.itemContainer.style["top"] = y + "px";
+		this.itemContainer.style["left"] = x + "px";
+		
+		this.visible = true;
+		
+		inMenu = true;
+	}
+	
+	// hide the menu
+	hide(){
+		this.itemContainer.style["display"] = "none";
+		
+		this.visible = false;
+		
+		inMenu = false;
+	}
+}
+
 /**
 	*	@brief A menu similar to the right-click context menu
 */

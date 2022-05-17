@@ -10,6 +10,7 @@ class Bot {
 		*	options: {
 		*		width: int, // width of bot, in inches
 		*		length: int, // length of bot, in inches
+		*		scale: p5.Vector, // scale of field, in pixels/inch
 		*	}
 	*/
 	constructor(options){
@@ -18,8 +19,10 @@ class Bot {
 		this.width = options.width || 18;
 		this.length = options.length || 18;
 		
-		this.pixelWidth = this.width * getFieldScale().x;
-		this.pixelLength = this.length * getFieldScale().y;
+		this.scale = options.scale;
+		
+		this.pixelWidth = this.width * this.scale.x;
+		this.pixelLength = this.length * this.scale.y;
 	}
 	
 	draw(x, y){
@@ -66,8 +69,8 @@ class Node {
 		rect(this.x - this.NODE_SIZE/2, this.y-this.NODE_SIZE/2, this.NODE_SIZE, this.NODE_SIZE);
 	}
 	
-	getRealCoordinates(){
-		return createVector(this.x/getFieldScale().x, this.y/getFieldScale().y);
+	getRealCoordinates(scale){
+		return createVector(this.x/scale.x, this.y/scale.y);
 	}
 };
 
@@ -85,27 +88,11 @@ class Path {
 		this.activeNode = 0;
 	}
 	
-	// draw+update this path
-	drawAndUpdate(){
+	draw(){
 		let pnode;
 		
 		for(let i = 0; i < this.nodes.length; i++){
 			let node = this.nodes[i];
-			
-			// update active node if in construction
-			if(this.activeNode >= 0 && i == this.activeNode){
-				node.setCoords(mouseX, mouseY);
-				
-				// create new node
-				if(mouseJustDown && mouseButton == LEFT){
-					this.nodes.push(new Node(mouseX, mouseY, this.bot));
-					this.activeNode++;
-					
-					// update on next frame
-					// FIX: this is a temporary fix for the page locking after creating a new node (blocks page execution)
-					break;
-				}
-			}
 			
 			// draw node
 			node.draw();
@@ -123,64 +110,20 @@ class Path {
 		}
 	}
 	
+	update(){
+		if(this.activeNode >= 0){
+			let node = this.nodes[this.activeNode];
+			
+			node.setCoords(mouseX, mouseY);
+			
+			if(mouseJustDown && mouseButton == LEFT){
+				this.nodes.push(new Node(mouseX, mouseY, this.bot));
+				this.activeNode++;
+			}
+		}
+	}
+	
 	stopConstructing(){
 		this.activeNode = -1;
 	}
 };
-
-// GLOBALS
-
-// field width + height in inches
-let fieldWidth = 144;
-let fieldHeight = 144;
-
-// path to field image
-let fieldImagePath = "/static/images/FreightFrenzyField.webp"; // defaults to freight frenzy field
-
-// only one path at a time (?)
-let mainPath;
-
-// p5js dependent globals
-let fieldImage, fieldScale, bot;
-
-
-// FIELD FUNCTIONS
-
-// draw the field
-function drawField(){
-	image(fieldImage, 0, 0, width, height);
-}
-
-// EXTERNAL PATH FUNCTIONS
-
-function newPath(){
-	mainPath = new Path(bot);
-}
-	
-// draw path if it exists
-function drawAndUpdatePath(){
-	if(mainPath) mainPath.drawAndUpdate();
-}
-
-function endPath(){
-	if(mainPath) mainPath.stopConstructing();
-}
-
-function deletePath(){
-	mainPath = null;
-}
-
-// UTILS
-
-// initialize p5js dependent globals
-function initPathingGlobals(){
-	fieldScale = createVector(width/fieldWidth, height/fieldHeight);
-	
-	fieldImage = loadImage(fieldImagePath);
-	
-	bot = new Bot();
-}
-
-function getFieldScale(){
-	return fieldScale;
-}
