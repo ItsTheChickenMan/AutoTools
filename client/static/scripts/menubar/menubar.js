@@ -18,19 +18,24 @@ class Prompt {
 		*
 		*	options: {
 		*		htmlContent: <html>, // string html for the prompt
+		*		js: function(){}, // javascript function to be run when the prompt is opened
 		*	}
 	*/
 	constructor(options){
 		this.htmlContent = options.htmlContent || "<div></div>";
+		this.js = options.js || function(){};
+		
+		// add js
+		this.htmlContent += "<script>" + 
 		
 		this.itemContainer = document.createElement("div");
 		
-		
+		// unlike a menu, this prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
 	}
 	
 	// show the menu at the coordinates
 	show(x, y){
-		this.itemContainer.style["display"] = "flex";
+		this.itemContainer.style["display"] = "block";
 		this.itemContainer.style["top"] = y + "px";
 		this.itemContainer.style["left"] = x + "px";
 		
@@ -51,6 +56,8 @@ class Prompt {
 
 /**
 	*	@brief A menu similar to the right-click context menu
+	*
+	*	@todo subclass of Prompt?
 */
 class Menu {
 	/**

@@ -34,6 +34,12 @@ let fieldImage, fieldScale, bot;
 let borderColor, backgroundColor;
 
 // menubars + menus
+let resizeBotPrompt = new Prompt({
+	htmlContent: `
+		<button id="close
+	`
+});
+
 // menubar at the top
 // main script for client interface
 let m = new Menubar("menu-bar", {
