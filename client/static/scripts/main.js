@@ -7,25 +7,25 @@ let m = new Menubar("menu-bar", {
 	items: [
 		{
 			name: "File",
-			itemNames: ["New", "Save"],
+			itemNames: ["New", "Save", "Export"],
 			itemActions: [
 				function(){
 					console.log("New");
 				},
 				function(){
 					console.log("Save");
+				},
+				function(){
+					console.log("Export");
 				}
 			]
 		},
 		{
-			name: "Edit",
-			itemNames: ["Undo", "Redo"],
+			name: "Bot",
+			itemNames: ["Resize"],
 			itemActions: [
 				function(){
-					console.log("Undo");
-				},
-				function(){
-					console.log("Redo");
+					console.log("resize bot");
 				}
 			]
 		}

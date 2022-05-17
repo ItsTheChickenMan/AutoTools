@@ -2,6 +2,36 @@
 
 // CLASSES
 
+// BOT CLASS
+class Bot {
+	/**
+		*	@brief Constructs a new bot from options
+		*
+		*	options: {
+		*		width: int, // width of bot, in inches
+		*		length: int, // length of bot, in inches
+		*	}
+	*/
+	constructor(options){
+		options = options || {};
+		
+		this.width = options.width || 18;
+		this.length = options.length || 18;
+		
+		this.pixelWidth = this.width * getFieldScale().x;
+		this.pixelLength = this.length * getFieldScale().y;
+	}
+	
+	draw(x, y){
+		x = Math.min(Math.max(x, this.pixelWidth/2), width - this.pixelWidth/2);
+		y = Math.min(Math.max(y, this.pixelLength/2), height - this.pixelLength/2);
+		
+		stroke(0);
+		noFill();
+		rect(x - this.pixelWidth/2, y - this.pixelLength/2, this.pixelWidth, this.pixelLength);
+	}
+}
+
 // NODE CLASS
 // note: feels very weird putting a class definition right in the middle of the file, but I can't think of a better place for this...
 class Node {
@@ -9,40 +39,47 @@ class Node {
 	NODE_COLOR = "rgba(50, 168, 82, 255)";
 	
 	// construct a new node
-	constructor(x, y){
+	constructor(x, y, bot){
 		this.nodeColor = color(this.NODE_COLOR);
 		
 		this.x = x || mouseX;
 		this.y = y || mouseY;
+		
+		this.minX = bot.pixelWidth/2;
+		this.maxX = width - bot.pixelWidth/2;
+		
+		this.minY = bot.pixelLength/2;
+		this.maxY = height - bot.pixelLength/2;
 	}
 	
 	setCoords(x, y){
-		this.x = x;
-		this.y = y;
+		this.x = Math.min(Math.max(x, this.minX), this.maxX);
+		this.y = Math.min(Math.max(y, this.minY), this.maxY);
 	}
 	
 	draw(){
 		fill(this.nodeColor);
 		ellipse(this.x, this.y, this.NODE_SIZE/5, this.NODE_SIZE/5);
 		
-		console.log(this.nodeColor);
-		
 		stroke(this.nodeColor);
 		fill(255, 0);
 		rect(this.x - this.NODE_SIZE/2, this.y-this.NODE_SIZE/2, this.NODE_SIZE, this.NODE_SIZE);
 	}
 	
-	getRealCoordinates(scale){
-		
+	getRealCoordinates(){
+		return createVector(this.x/getFieldScale().x, this.y/getFieldScale().y);
 	}
 };
 
 // PATH CLASS
 
 class Path {
-	constructor(){
+	constructor(bot){
+		// bot we're pathing for
+		this.bot = bot;
+		
 		// actual path
-		this.nodes = [new Node(0, 0)];
+		this.nodes = [new Node(0, 0, this.bot)];
 		
 		// "active" node index
 		this.activeNode = 0;
@@ -56,18 +93,25 @@ class Path {
 			let node = this.nodes[i];
 			
 			// update active node if in construction
-			if(this.activeNode > 0 && i == this.activeNode){
+			if(this.activeNode >= 0 && i == this.activeNode){
 				node.setCoords(mouseX, mouseY);
 				
 				// create new node
-				if(mouseIsPressed){
-					this.nodes.push(new Node(mouseX, mouseY));
+				if(mouseJustDown && mouseButton == LEFT){
+					this.nodes.push(new Node(mouseX, mouseY, this.bot));
 					this.activeNode++;
+					
+					// update on next frame
+					// FIX: this is a temporary fix for the page locking after creating a new node (blocks page execution)
+					break;
 				}
 			}
 			
 			// draw node
 			node.draw();
+			
+			// draw bot
+			this.bot.draw(node.x, node.y);
 			
 			// draw line between
 			if(pnode){
@@ -97,7 +141,7 @@ let fieldImagePath = "/static/images/FreightFrenzyField.webp"; // defaults to fr
 let mainPath;
 
 // p5js dependent globals
-let fieldImage, fieldScale;
+let fieldImage, fieldScale, bot;
 
 
 // FIELD FUNCTIONS
@@ -109,6 +153,10 @@ function drawField(){
 
 // EXTERNAL PATH FUNCTIONS
 
+function newPath(){
+	mainPath = new Path(bot);
+}
+	
 // draw path if it exists
 function drawAndUpdatePath(){
 	if(mainPath) mainPath.drawAndUpdate();
@@ -129,4 +177,10 @@ function initPathingGlobals(){
 	fieldScale = createVector(width/fieldWidth, height/fieldHeight);
 	
 	fieldImage = loadImage(fieldImagePath);
+	
+	bot = new Bot();
+}
+
+function getFieldScale(){
+	return fieldScale;
 }

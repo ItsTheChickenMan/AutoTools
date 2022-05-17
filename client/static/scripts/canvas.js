@@ -11,18 +11,22 @@ let initialWidth = 500;
 let initialHeight = 500;
 let borderWidth = 2;
 
+// mouse globals
+let mouseJustDown = false;
+let wasReleased = false;
+
 // context menu which appears when the user right clicks on the canvas
 let contextMenu = new Menu({
-	itemNames: ["New Path", "End Path", "Delete Path"],
+	itemNames: ["Start Pathing", "End Pathing", "Delete Path"],
 	itemActions: [
 		function(){
-			mainPath = new Path();
+			newPath();
 		},
 		function(){
 			endPath();
 		},
 		function(){
-			mainPath.clear();
+			deletePath();
 		}
 	]
 });
@@ -60,14 +64,24 @@ function setup(){
 }
 
 function draw(){
+	// mouse update
+	updateMouseClicked();
+	
+	// render //
+	
 	// draw background
 	drawBg();
 	
 	// draw field
 	drawField();
 	
-	// draw existing path
-	drawAndUpdatePath();
+	// actions won't take place unless user is not in a menu
+	// NOTE: no render calls should take place in here or they won't render in a menu
+	// FIX: there's a render call in here
+	if(!inMenu){
+		// draw existing path
+		drawAndUpdatePath();
+	}
 }
 
 // UTILS
@@ -84,4 +98,10 @@ function initGlobals(){
 function drawBg(){
 	// set background color
 	background(backgroundColor);
+}
+
+// check if the mouse has been "clicked" (pressed 
+function updateMouseClicked(){
+	mouseJustDown = mouseIsPressed && wasReleased;
+	wasReleased = !mouseIsPressed;
 }

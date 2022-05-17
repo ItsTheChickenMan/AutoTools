@@ -1,5 +1,13 @@
 // tiny side thing for creating menus/menu buttons/menubars
 
+// true if the user has a menu open at all
+let inMenu = false;
+
+// default action function for menu
+function defaultAction(){
+	console.warn("No action is defined for this button.  You should define one in the itemActions property when constructing this Menu.");
+}
+
 /**
 	*	@brief A menu similar to the right-click context menu
 */
@@ -27,7 +35,7 @@ class Menu {
 		for(let i = 0; i < options.itemNames.length; i++){
 			// item name
 			let name = options.itemNames[i];
-			let action = options.itemActions[i];
+			let action = options.itemActions[i] || defaultAction;
 			
 			// create buttons for each item name
 			let itemButton = document.createElement("button");
@@ -67,6 +75,8 @@ class Menu {
 		this.itemContainer.style["left"] = x + "px";
 		
 		this.visible = true;
+		
+		inMenu = true;
 	}
 	
 	// hide the menu
@@ -74,6 +84,8 @@ class Menu {
 		this.itemContainer.style["display"] = "none";
 		
 		this.visible = false;
+		
+		inMenu = false;
 	}
 }
 
