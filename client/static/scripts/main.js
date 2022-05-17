@@ -36,8 +36,22 @@ let borderColor, backgroundColor;
 // menubars + menus
 let resizeBotPrompt = new Prompt({
 	htmlContent: `
-		<button id="close
-	`
+		<input type="text">Width (inches):</input>
+		<button id="close-button">Done</button>
+	`,
+	js: function(){
+		this.itemContainer.style.width = "100px";
+		this.itemContainer.style.height = "50px";
+		this.itemContainer.style["background-color"] = "white";
+		
+		this.show(100, 50);
+		
+		let b = this.itemContainer.children[0];
+		
+		b.addEventListener("click", e => {
+			this.hide();
+		});
+	}
 });
 
 // menubar at the top

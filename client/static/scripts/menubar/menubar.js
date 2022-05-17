@@ -5,7 +5,7 @@ let inMenu = false;
 
 // default action function for menu
 function defaultAction(){
-	console.warn("No action is defined for this button.  You should define one in the itemActions property when constructing this Menu.");
+	console.warn("No action is defined for this button/prompt.  You should define one in the itemActions property when constructing this Menu.");
 }
 
 
@@ -18,26 +18,32 @@ class Prompt {
 		*
 		*	options: {
 		*		htmlContent: <html>, // string html for the prompt
-		*		js: function(){}, // javascript function to be run when the prompt is opened
+		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed with this in the function
 		*	}
 	*/
 	constructor(options){
 		this.htmlContent = options.htmlContent || "<div></div>";
-		this.js = options.js || function(){};
-		
-		// add js
-		this.htmlContent += "<script>" + 
-		
+
 		this.itemContainer = document.createElement("div");
+		this.itemContainer.classList.add("menu-item-container");
+		this.itemContainer.style.display = "block";
+		this.itemContainer.insertAdjacentHTML("afterbegin", this.htmlContent);
+		this.hide();
 		
 		// unlike a menu, this prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
+		if(options.js){
+			options.js.bind(this)(this.itemContainer);
+		}
+		
+		// push item container into document
+		document.body.appendChild(this.itemContainer);
 	}
 	
 	// show the menu at the coordinates
 	show(x, y){
-		this.itemContainer.style["display"] = "block";
-		this.itemContainer.style["top"] = y + "px";
-		this.itemContainer.style["left"] = x + "px";
+		this.itemContainer.style.display = "block";
+		this.itemContainer.style.top = y + "px";
+		this.itemContainer.style.left = x + "px";
 		
 		this.visible = true;
 		
@@ -46,7 +52,7 @@ class Prompt {
 	
 	// hide the menu
 	hide(){
-		this.itemContainer.style["display"] = "none";
+		this.itemContainer.style.display = "none";
 		
 		this.visible = false;
 		
@@ -118,9 +124,9 @@ class Menu {
 	
 	// show the menu at the coordinates
 	show(x, y){
-		this.itemContainer.style["display"] = "flex";
-		this.itemContainer.style["top"] = y + "px";
-		this.itemContainer.style["left"] = x + "px";
+		this.itemContainer.style.display = "flex";
+		this.itemContainer.style.top = y + "px";
+		this.itemContainer.style.left = x + "px";
 		
 		this.visible = true;
 		
@@ -129,7 +135,7 @@ class Menu {
 	
 	// hide the menu
 	hide(){
-		this.itemContainer.style["display"] = "none";
+		this.itemContainer.style.display = "none";
 		
 		this.visible = false;
 		
