@@ -1,7 +1,7 @@
 // tiny side thing for creating menus/menu buttons/menubars
 
-// true if the user has a menu open at all
-let inMenu = false;
+// menu currently open 
+let activeMenu = null;
 
 // default action function for menu
 function defaultAction(){
@@ -30,13 +30,13 @@ class Prompt {
 		this.itemContainer.insertAdjacentHTML("afterbegin", this.htmlContent);
 		this.hide();
 		
+		// push item container into document
+		document.body.appendChild(this.itemContainer);
+		
 		// unlike a menu, this prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
 		if(options.js){
 			options.js.bind(this)(this.itemContainer);
 		}
-		
-		// push item container into document
-		document.body.appendChild(this.itemContainer);
 	}
 	
 	// show the menu at the coordinates
@@ -47,7 +47,9 @@ class Prompt {
 		
 		this.visible = true;
 		
-		inMenu = true;
+		if(activeMenu) activeMenu.hide();
+		
+		activeMenu = this;
 	}
 	
 	// hide the menu
@@ -56,7 +58,7 @@ class Prompt {
 		
 		this.visible = false;
 		
-		inMenu = false;
+		if(activeMenu == this) activeMenu = null;
 	}
 }
 
@@ -98,7 +100,7 @@ class Menu {
 			
 			itemButton.textContent = name;
 			itemButton.addEventListener("mouseup", e => {
-				action(); // TODO: what parameters?
+				action(e);
 			});
 			
 			this.itemContainer.appendChild(itemButton);
@@ -130,7 +132,9 @@ class Menu {
 		
 		this.visible = true;
 		
-		inMenu = true;
+		if(activeMenu) activeMenu.hide();
+		
+		activeMenu = this;
 	}
 	
 	// hide the menu
@@ -139,7 +143,7 @@ class Menu {
 		
 		this.visible = false;
 		
-		inMenu = false;
+		if(activeMenu == this) activeMenu = null;
 	}
 }
 

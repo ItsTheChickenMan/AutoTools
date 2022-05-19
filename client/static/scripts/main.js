@@ -36,19 +36,25 @@ let borderColor, backgroundColor;
 // menubars + menus
 let resizeBotPrompt = new Prompt({
 	htmlContent: `
-		<input type="text">Width (inches):</input>
+		<label for="width-input">Width (inches):</label>
+		<input id="width-input" type="number"></input><br>
+		<label for="length-input">Length (inches):</label>
+		<input id="length-input" type="number"></input><br>
 		<button id="close-button">Done</button>
 	`,
 	js: function(){
-		this.itemContainer.style.width = "100px";
-		this.itemContainer.style.height = "50px";
 		this.itemContainer.style["background-color"] = "white";
 		
-		this.show(100, 50);
-		
-		let b = this.itemContainer.children[0];
+		let b = document.getElementById("close-button");
+		let wi = document.getElementById("width-input");
+		let li = document.getElementById("length-input");
 		
 		b.addEventListener("click", e => {
+			// update width + height
+			
+			bot.setWidth(wi.value);
+			bot.setLength(li.value);
+			
 			this.hide();
 		});
 	}
@@ -70,7 +76,7 @@ let m = new Menubar("menu-bar", {
 					console.log("Save");
 				},
 				function(){
-					console.log("Export");
+					if(mainPath) mainPath.export("Test.java");
 				}
 			]
 		},
@@ -78,8 +84,8 @@ let m = new Menubar("menu-bar", {
 			name: "Bot",
 			itemNames: ["Resize"],
 			itemActions: [
-				function(){
-					console.log("resize bot");
+				function(e){
+					resizeBotPrompt.show(e.clientX, e.clientY);
 				}
 			]
 		}
@@ -144,7 +150,7 @@ function draw(){
 	
 	// actions won't take place unless user is not in a menu
 	// NOTE: no render calls should take place in here or they won't render in a menu
-	if(!inMenu){
+	if(!activeMenu){
 		// draw existing path
 		if(mainPath) mainPath.update();
 	}

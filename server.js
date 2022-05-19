@@ -30,6 +30,15 @@ app.get("/", (req, res) => {
 	});
 });
 
+app.use(express.json());
+
+// post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
+app.post("/export/", (req, res) => {
+	console.log(req.body);
+	
+	res.status(200).send("You did it").end();
+});
+
 // start listening
 app.listen(port, function(){
 	console.log("Server is listening, interface is available at localhost:" + port);

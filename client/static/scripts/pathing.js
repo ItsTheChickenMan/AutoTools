@@ -16,12 +16,19 @@ class Bot {
 	constructor(options){
 		options = options || {};
 		
-		this.width = options.width || 18;
-		this.length = options.length || 18;
-		
 		this.scale = options.scale;
 		
+		this.setWidth(options.width || 18);
+		this.setLength(options.length || 18);
+	}
+	
+	setWidth(w){
+		this.width = w;
 		this.pixelWidth = this.width * this.scale.x;
+	}
+	
+	setLength(l){
+		this.length = l;
 		this.pixelLength = this.length * this.scale.y;
 	}
 	
@@ -48,6 +55,8 @@ class Node {
 		this.x = x || mouseX;
 		this.y = y || mouseY;
 		
+		this.bot = bot;
+		
 		this.minX = bot.pixelWidth/2;
 		this.maxX = width - bot.pixelWidth/2;
 		
@@ -69,14 +78,32 @@ class Node {
 		rect(this.x - this.NODE_SIZE/2, this.y-this.NODE_SIZE/2, this.NODE_SIZE, this.NODE_SIZE);
 	}
 	
-	getRealCoordinates(scale){
-		return createVector(this.x/scale.x, this.y/scale.y);
+	getRealCoordinates(){
+		return createVector(this.x/this.bot.scale.x, this.y/this.bot.scale.y);
+	}
+	
+	/**
+		*	@brief converts this node into payload data for the server
+		*
+		*	payload format:
+		*	{
+		*		type: data for type
+		*	}
+	*/
+	toPayload(){
+		let rc = this.getRealCoordinates();
+		
+		return {
+			position: [rc.x, rc.y]
+		};
 	}
 };
 
 // PATH CLASS
-
 class Path {
+	// url to send post request of path over for parsing/export
+	PATH_EXPORT_URL = "/export/";
+	
 	constructor(bot){
 		// bot we're pathing for
 		this.bot = bot;
@@ -125,5 +152,37 @@ class Path {
 	
 	stopConstructing(){
 		this.activeNode = -1;
+	}
+	
+	// abstract this path into a table of information
+	createServerPayload(name){
+		let payload = {
+			name: name,
+			nodes: []
+		};
+		
+		for(let i = 0; i < this.nodes.length; i++){
+			payload.nodes.push(this.nodes[i].toPayload());
+		}
+		
+		return payload;
+	}
+	
+	export(name){
+		let payload = this.createServerPayload(name);
+		
+		payload = JSON.stringify(payload);
+		
+		fetch(window.location.origin + this.PATH_EXPORT_URL, {
+			method: "POST",
+			headers: new Headers({'Content-Type': 'application/json'}),
+			body: payload
+		})
+		// TODO: not working?
+		.then(res => {
+			if(res.status == 200){
+				alert("Exporting to " + name);
+			}
+		}).catch(console.error);
 	}
 };
