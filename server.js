@@ -36,7 +36,7 @@ app.use(express.json());
 app.post("/export/", (req, res) => {
 	console.log(req.body);
 	
-	res.status(200).send("You did it").end();
+	res.status(200).send("You did it").end(); // fetch requests need something to be sent back to resolve properly, otherwise, I wouldn't have added this little "you did it" bit.  I could probably just send an empty string, but what's the fun in that?
 });
 
 // start listening

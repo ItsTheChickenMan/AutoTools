@@ -178,7 +178,6 @@ class Path {
 			headers: new Headers({'Content-Type': 'application/json'}),
 			body: payload
 		})
-		// TODO: not working?
 		.then(res => {
 			if(res.status == 200){
 				alert("Exporting to " + name);
