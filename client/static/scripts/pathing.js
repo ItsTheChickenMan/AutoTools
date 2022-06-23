@@ -16,7 +16,12 @@ class Bot {
 	constructor(options){
 		options = options || {};
 		
-		this.scale = options.scale;
+		this.fieldScale = options.scale;
+		this.diagonalFieldScale = Math.sqrt(options.scale.x*options.scale.x + options.scale.y*options.scale.y);
+		
+		this.diagonalLength = 0;
+		this.diagonalPixelLength = 0;
+		this.ia = 0;
 		
 		this.setWidth(options.width || 18);
 		this.setLength(options.length || 18);
@@ -24,21 +29,62 @@ class Bot {
 	
 	setWidth(w){
 		this.width = w;
-		this.pixelWidth = this.width * this.scale.x;
+		this.pixelWidth = this.width * this.fieldScale.x;
+		
+		this.updateDrawValues();
 	}
 	
 	setLength(l){
 		this.length = l;
-		this.pixelLength = this.length * this.scale.y;
+		this.pixelLength = this.length * this.fieldScale.y;
+		
+		this.updateDrawValues();
 	}
 	
-	draw(x, y){
-		x = Math.min(Math.max(x, this.pixelWidth/2), width - this.pixelWidth/2);
-		y = Math.min(Math.max(y, this.pixelLength/2), height - this.pixelLength/2);
+	updateDrawValues(){
+		this.diagonalLength = Math.sqrt((this.width/2)*(this.width/2) + (this.length/2)*(this.length/2));
+		this.diagonalPixelLength = this.diagonalLength*this.diagonalFieldScale;
+		
+		this.ia = Math.atan(this.width/this.length);
+	}
+	
+	draw(x, y, r){
+		// TODO: make this work
+		/*
+		// constrain r
+		r = r % Math.PI;
+		
+		// get pixel offset
+		let wo1 = Math.sin(this.ia+r)*this.diagonalPixelLength;
+		let wo2 = Math.sin(r-this.ia)*this.diagonalPixelLength;
+		
+		let ho1 = Math.cos(r-this.ia)*this.diagonalPixelLength;
+		let ho2 = Math.cos(180-r-this.ia)*this.diagonalPixelLength;
+		
+		let wo = Math.max(wo1, wo2);
+		let ho = Math.max(ho1, ho2);
+		
+		console.log(this.ia);
+		
+		// constrain coordinates
+		x = Math.min(Math.max(x, wo), width - wo);
+		y = Math.min(Math.max(y, ho), height - ho);
+		*/
+		
+		// save draw state
+		push();
 		
 		stroke(0);
 		noFill();
-		rect(x - this.pixelWidth/2, y - this.pixelLength/2, this.pixelWidth, this.pixelLength);
+		
+		// translate/rotate
+		translate(x, y);
+		rotate(r || 0);
+		
+		rect(-this.pixelWidth/2, -this.pixelLength/2, this.pixelWidth, this.pixelLength);
+		
+		// return draw state
+		pop();
 	}
 }
 
@@ -79,17 +125,9 @@ class Node {
 	}
 	
 	getRealCoordinates(){
-		return createVector(this.x/this.bot.scale.x, this.y/this.bot.scale.y);
+		return createVector(this.x/this.bot.fieldScale.x, this.y/this.bot.fieldScale.y);
 	}
 	
-	/**
-		*	@brief converts this node into payload data for the server
-		*
-		*	payload format:
-		*	{
-		*		type: data for type
-		*	}
-	*/
 	toPayload(){
 		let rc = this.getRealCoordinates();
 		
@@ -171,6 +209,8 @@ class Path {
 	export(name){
 		let payload = this.createServerPayload(name);
 		
+		console.log(payload);
+		
 		payload = JSON.stringify(payload);
 		
 		fetch(window.location.origin + this.PATH_EXPORT_URL, {
@@ -178,10 +218,10 @@ class Path {
 			headers: new Headers({'Content-Type': 'application/json'}),
 			body: payload
 		})
-		.then(res => {
-			if(res.status == 200){
-				alert("Exporting to " + name);
-			}
-		}).catch(console.error);
+		.then(res => { if(res.status == 200) return res.text() })
+		.then(outDir => {
+			alert("Exporting to " + outDir + name);
+		})
+		.catch(console.error);
 	}
 };

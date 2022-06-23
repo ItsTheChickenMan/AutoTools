@@ -109,13 +109,14 @@ class Menu {
 		// push item container into document
 		document.body.appendChild(this.itemContainer);
 		
-		this.supressHide = false;
+		this.suppressHide = false;
 		
 		// manage click events
 		document.body.addEventListener("mouseup", function(e){
-			// temporary override to supress the hide action
-			if(this.supressHide){
-				this.supressHide = false;
+			// temporary override to suppress the hide action
+			// note: fixed spelling of "supress" but it's probably still in a few commits.  shhhh
+			if(this.suppressHide){
+				this.suppressHide = false;
 				return;
 			}
 			
@@ -192,8 +193,8 @@ class MenuButton {
 		
 		// menu button logic
 		this.mainButton.addEventListener("mouseup", function(e){
-			// enable supress hide
-			this.menu.supressHide = true;
+			// enable suppress hide
+			this.menu.suppressHide = true;
 			
 			// show the menu
 			this.show(e.clientX, e.clientY);

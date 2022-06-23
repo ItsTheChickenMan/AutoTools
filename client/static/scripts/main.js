@@ -70,9 +70,11 @@ let m = new Menubar("menu-bar", {
 			itemNames: ["New", "Save", "Export"],
 			itemActions: [
 				function(){
+					// TODO: do
 					console.log("New");
 				},
 				function(){
+					// TODO: do
 					console.log("Save");
 				},
 				function(){
@@ -124,14 +126,20 @@ function setup(){
 	mainCanvas.canvas.style["border-width"] = borderWidth + "px";
 	mainCanvas.canvas.style["border-color"] = borderColor.toString();
 	
+	// set default clickable menu
+	setDefaultMenu(contextMenu);
+	
+	// initialize clickables
+	initClickables(mainCanvas.canvas);
+	
 	// menu logic
-	mainCanvas.canvas.addEventListener("contextmenu", e => {
+	/*mainCanvas.canvas.addEventListener("contextmenu", e => {
 		// prevent right click
 		e.preventDefault();
 		
 		// open menu
 		contextMenu.show(e.clientX, e.clientY);
-	});
+	});*/
 }
 
 function draw(){
@@ -146,7 +154,10 @@ function draw(){
 	// draw field
 	drawField();
 	
-	if(mainPath) mainPath.draw();
+	// render actions for main path
+	if(mainPath){
+		mainPath.draw();
+	}
 	
 	// actions won't take place unless user is not in a menu
 	// NOTE: no render calls should take place in here or they won't render in a menu
@@ -180,7 +191,7 @@ function drawBg(){
 	background(backgroundColor);
 }
 
-// check if the mouse has been "clicked" (pressed 
+// check if the mouse was just down (for events which only run when mouse is clocked)
 function updateMouseClicked(){
 	mouseJustDown = mouseIsPressed && wasReleased;
 	wasReleased = !mouseIsPressed;
