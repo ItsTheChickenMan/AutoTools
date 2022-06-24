@@ -83,6 +83,9 @@ class Menu {
 	constructor(options){
 		this.itemContainer = document.createElement("div"); // menu list of actions
 		
+		// default arguments to actions
+		this.args = [];
+		
 		// stylize item container
 		this.itemContainer.classList.add("menu-item-container");
 		this.hide(); // hide initially
@@ -100,7 +103,7 @@ class Menu {
 			
 			itemButton.textContent = name;
 			itemButton.addEventListener("mouseup", e => {
-				action(e);
+				action(e, ...(this.args || []));
 			});
 			
 			this.itemContainer.appendChild(itemButton);
@@ -126,7 +129,11 @@ class Menu {
 	}
 	
 	// show the menu at the coordinates
-	show(x, y){
+	// args = array of any arguments to pass to function actions (can be handy for ensuring that menus are acting on the proper object)
+	show(x, y, args){
+		// set args
+		this.args = args;
+		
 		this.itemContainer.style.display = "flex";
 		this.itemContainer.style.top = y + "px";
 		this.itemContainer.style.left = x + "px";

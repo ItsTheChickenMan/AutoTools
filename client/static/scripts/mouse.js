@@ -10,6 +10,9 @@ let clickables = [];
 // when null, won't show anything on background click
 let defaultMenu = null;
 
+// a clickable becomes "active" when it's clicked.  this is mostly so that single menu instances can be used across various clickables instead of having to make a new menu each time
+let activeClickable = null;
+
 class Clickable {
 	constructor(obj, menu){
 		// assign linked object
@@ -64,8 +67,8 @@ function initClickables(canvas){
 		e.preventDefault();
 		
 		// search for clickable which contains mouse coordinates
-		let x = e.clientX;
-		let y = e.clientY;
+		let x = mouseX;
+		let y = mouseY;
 		
 		for(let i = 0; i < clickables.length; i++){
 			let c = clickables[i];
@@ -73,7 +76,10 @@ function initClickables(canvas){
 			// if clickable contains mouse coordinates
 			if(c.contains(x, y)){
 				// show menu
-				c.menu.show(x, y);
+				// NOTE: always passes the clickable object as the args
+				c.menu.show(x, y, [c.obj]);
+				
+				activeClickable = c;
 				
 				// end function
 				return;

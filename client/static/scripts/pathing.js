@@ -1,6 +1,40 @@
 // manages all of the pathing interactions with the canvas
 
+// only one path at a time (?)
+let mainPath;
+
 // CLASSES
+
+// context menu for a node right click
+let nodeContextMenu = new Menu({
+	itemNames: ["Add Node Action", "Insert Node Before", "Insert Node After", "Change Node Position", "Delete Node"],
+	itemActions: [
+		function(e, n){ // add node action
+			console.log(n);
+		},
+		function(e, n){ // insert before
+			// insert a new node before n and set mainPath's active node to it
+			let newIndex = mainPath.nodes.indexOf(n);
+			
+			mainPath.nodes.splice(newIndex, 0, new Node(mouseX, mouseY, n.bot));
+			mainPath.activeNode = newIndex;
+		},
+		function(e, n){ // insert after
+			// insert a new node before n and set mainPath's active node to it
+			let newIndex = mainPath.nodes.indexOf(n)+1;
+			
+			mainPath.nodes.splice(newIndex, 0, new Node(mouseX, mouseY, n.bot));
+			mainPath.activeNode = newIndex;
+		},
+		function(e, n){ // change position
+			mainPath.activeNode = mainPath.nodes.indexOf(n);
+		},
+		function(e, n){ // delete
+			mainPath.nodes.splice(mainPath.nodes.indexOf(n), 1);
+		}
+	]
+});
+
 
 // BOT CLASS
 class Bot {
@@ -88,6 +122,14 @@ class Bot {
 	}
 }
 
+// NODE ACTION CLASS
+// node actions can be anything that the user defines.  there are also pre-existing definitions
+class NodeAction {
+	constructor(){
+		
+	}
+};
+
 // NODE CLASS
 // note: feels very weird putting a class definition right in the middle of the file, but I can't think of a better place for this...
 class Node {
@@ -103,11 +145,32 @@ class Node {
 		
 		this.bot = bot;
 		
+		// TODO: dynamic node min/max
 		this.minX = bot.pixelWidth/2;
 		this.maxX = width - bot.pixelWidth/2;
 		
 		this.minY = bot.pixelLength/2;
 		this.maxY = height - bot.pixelLength/2;
+		
+		// node actions
+		// actions performed in order on that node before the bot is moved to the next node
+		this.nodeActions = [];
+	}
+	
+	// clickable functions
+	getClickablePosition(){
+		return {
+			x: this.x,
+			y: this.y
+		};
+	}
+	
+	getClickableSize(){
+		// TODO: make bounding box scale a property
+		return {
+			w: this.NODE_SIZE*1.5,
+			h: this.NODE_SIZE*1.5
+		};
 	}
 	
 	setCoords(x, y){
@@ -151,6 +214,9 @@ class Path {
 		
 		// "active" node index
 		this.activeNode = 0;
+		
+		// is path constructing
+		this.constructing = true;
 	}
 	
 	draw(){
@@ -182,14 +248,26 @@ class Path {
 			node.setCoords(mouseX, mouseY);
 			
 			if(mouseJustDown && mouseButton == LEFT){
-				this.nodes.push(new Node(mouseX, mouseY, this.bot));
-				this.activeNode++;
+				if(this.constructing){
+					this.nodes.push(new Node(mouseX, mouseY, this.bot));
+				
+					// create a new clickable for node
+					new Clickable(node, nodeContextMenu);
+				
+					this.activeNode++;
+				} else {
+					this.activeNode = -1;
+				}
 			}
 		}
 	}
 	
 	stopConstructing(){
+		// create a new clickable for node
+		new Clickable(this.nodes[this.activeNode], nodeContextMenu);
+		
 		this.activeNode = -1;
+		this.constructing = false;
 	}
 	
 	// abstract this path into a table of information

@@ -24,9 +24,6 @@ let fieldHeight = 144;
 // path to field image
 let fieldImagePath = "/static/images/FreightFrenzyField.webp"; // defaults to freight frenzy field
 
-// only one path at a time (?)
-let mainPath;
-
 // p5js dependent globals
 let fieldImage, fieldScale, bot;
 
@@ -145,6 +142,8 @@ function setup(){
 function draw(){
 	// mouse update
 	updateMouseClicked();
+	
+	updateClickables();
 	
 	// render //
 	
