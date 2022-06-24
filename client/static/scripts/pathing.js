@@ -16,14 +16,22 @@ let nodeContextMenu = new Menu({
 			// insert a new node before n and set mainPath's active node to it
 			let newIndex = mainPath.nodes.indexOf(n);
 			
-			mainPath.nodes.splice(newIndex, 0, new Node(mouseX, mouseY, n.bot));
+			let newNode = new Node(mouseX, mouseY, n.bot);
+			
+			new Clickable(newNode, nodeContextMenu);
+			
+			mainPath.nodes.splice(newIndex, 0, newNode);
 			mainPath.activeNode = newIndex;
 		},
 		function(e, n){ // insert after
 			// insert a new node before n and set mainPath's active node to it
 			let newIndex = mainPath.nodes.indexOf(n)+1;
 			
-			mainPath.nodes.splice(newIndex, 0, new Node(mouseX, mouseY, n.bot));
+			let newNode = new Node(mouseX, mouseY, n.bot);
+			
+			new Clickable(newNode, nodeContextMenu);
+			
+			mainPath.nodes.splice(newIndex, 0, newNode);
 			mainPath.activeNode = newIndex;
 		},
 		function(e, n){ // change position
