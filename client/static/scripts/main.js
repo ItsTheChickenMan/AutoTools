@@ -102,11 +102,11 @@ let contextMenu = new Menu({
 			if(mainPath) mainPath.stopConstructing();
 		},
 		function(){
+			mainPath.destroy();
 			mainPath = null;
 		}
 	]
 });
-
 
 // EVENT LISTENERS
 
@@ -129,6 +129,10 @@ function setup(){
 	// initialize clickables
 	initClickables(mainCanvas.canvas);
 	
+	// synchronously fetch the currently available default actions
+	// TODO: it doesn't really make sense to use async in this case, but synchronous XHR is deprecated so probably switch to fetch() at some point
+	fetchActionsSync();
+	
 	// menu logic
 	/*mainCanvas.canvas.addEventListener("contextmenu", e => {
 		// prevent right click
@@ -143,7 +147,7 @@ function draw(){
 	// mouse update
 	updateMouseClicked();
 	
-	updateClickables();
+	
 	
 	// render //
 	
@@ -164,6 +168,8 @@ function draw(){
 		// draw existing path
 		if(mainPath) mainPath.update();
 	}
+	
+	updateClickables();
 }
 
 // UTILS

@@ -30,6 +30,15 @@ class Clickable {
 	
 	// update position and size
 	update(){
+		// check if parent object still exists
+		if(this.obj.dead){
+			// kill the reference to the object and then the clickable
+			this.obj = null;
+			clickables.splice(clickables.indexOf(this), 1);
+			
+			return;
+		}
+		
 		this.position = this.obj.getClickablePosition(); // {x: x, y: y}
 		this.size = this.obj.getClickableSize();  // {w: w, h: h}
 	}
@@ -54,7 +63,7 @@ function setDefaultMenu(menu){
 function updateClickables(){
 	for(let i = 0; i < clickables.length; i++){
 		let c = clickables[i];
-		
+
 		c.update();
 	}
 }

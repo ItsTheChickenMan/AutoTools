@@ -3,6 +3,9 @@
 // only one path at a time (?)
 let mainPath;
 
+// all currently loaded actions
+let loadedActions = [];
+
 // CLASSES
 
 // context menu for a node right click
@@ -38,6 +41,8 @@ let nodeContextMenu = new Menu({
 			mainPath.activeNode = mainPath.nodes.indexOf(n);
 		},
 		function(e, n){ // delete
+			n.kill();
+			
 			mainPath.nodes.splice(mainPath.nodes.indexOf(n), 1);
 		}
 	]
@@ -131,7 +136,8 @@ class Bot {
 }
 
 // NODE ACTION CLASS
-// node actions can be anything that the user defines.  there are also pre-existing definitions
+// this is a template for valid node actions.  
+// node actions can be anything that the user defines.  there should also be pre-existing definitions
 class NodeAction {
 	constructor(){
 		
@@ -139,7 +145,7 @@ class NodeAction {
 };
 
 // NODE CLASS
-// note: feels very weird putting a class definition right in the middle of the file, but I can't think of a better place for this...
+// TODO: fix some bug where nodes will become broken, possibly due to clickables
 class Node {
 	NODE_SIZE = 15;
 	NODE_COLOR = "rgba(50, 168, 82, 255)";
@@ -163,6 +169,20 @@ class Node {
 		// node actions
 		// actions performed in order on that node before the bot is moved to the next node
 		this.nodeActions = [];
+		
+		// this needs to exist because nodes aren't deleted when they have associated clickables, which can lead to some issues with garbage colletion
+		// clickables check the "dead" parameter to see if they have to dissassociate with their object, and then kill it
+		this.dead = false;
+		
+		// the + adds actions
+		this.nodeActionMenu = new Menu({
+			itemNames: ["+"], // TODO: stylize the +
+			itemActions: [
+				function(){
+					
+				}
+			]
+		});
 	}
 	
 	// clickable functions
@@ -205,6 +225,10 @@ class Node {
 		return {
 			position: [rc.x, rc.y]
 		};
+	}
+	
+	kill(){
+		this.dead = true;
 	}
 };
 
@@ -310,4 +334,28 @@ class Path {
 		})
 		.catch(console.error);
 	}
+	
+	// kills all associated nodes so that clickables are deleted
+	destroy(){
+		for(let i = 0; i < this.nodes.length; i++){
+			this.nodes[i].kill();
+		}
+	}
 };
+
+// UTILS
+
+// fetch available actions
+function fetchActionsSync(){
+	let request = new XMLHttpRequest();
+	request.open('GET', '/validActions', false); // `false` makes the request synchronous
+	request.send(null);
+
+	if (request.status === 200) {
+		// load contents into json object
+		let actions = JSON.parse(request.responseText);
+		
+		// format actions
+		
+	}
+}
