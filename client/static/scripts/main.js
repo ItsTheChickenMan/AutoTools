@@ -37,18 +37,17 @@ let resizeBotPrompt = new Prompt({
 		<input id="width-input" type="number"></input><br>
 		<label for="length-input">Length (inches):</label>
 		<input id="length-input" type="number"></input><br>
-		<button id="close-button">Done</button>
+		<button id="close-button-resize-bot-prompt">Done</button>
 	`,
 	js: function(){
 		this.itemContainer.style["background-color"] = "white";
 		
-		let b = document.getElementById("close-button");
+		let b = document.getElementById("close-button-resize-bot-prompt");
 		let wi = document.getElementById("width-input");
 		let li = document.getElementById("length-input");
 		
 		b.addEventListener("click", e => {
 			// update width + height
-			
 			bot.setWidth(wi.value);
 			bot.setLength(li.value);
 			

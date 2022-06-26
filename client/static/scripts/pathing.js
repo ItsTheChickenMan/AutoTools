@@ -146,17 +146,8 @@ class Bot {
 	}
 }
 
-// NODE ACTION CLASS
-// this is a template for valid node actions.  
-// node actions can be anything that the user defines.  there should also be pre-existing definitions
-class NodeAction {
-	constructor(){
-		
-	}
-};
-
 // NODE CLASS
-// TODO: fix some bug where nodes will become broken, possibly due to clickables
+// TODO: fix some bug where nodes will become broken "randomly", possibly due to clickables being active while nodes are being placed
 class Node {
 	NODE_SIZE = 15;
 	NODE_COLOR = "rgba(50, 168, 82, 255)";
@@ -182,12 +173,14 @@ class Node {
 		// actions performed in order on that node before the bot is moved to the next node
 		this.nodeActions = [];
 		
-		// this needs to exist because nodes aren't deleted when they have associated clickables, which can lead to some issues with garbage colletion
+		// this needs to exist because nodes aren't deleted when they have associated clickables, which can lead to some issues with garbage collection
 		// clickables check the "dead" parameter to see if they have to dissassociate with their object, and then kill it
 		this.dead = false;
 		
 		// the + adds actions
 		this.nodeActionMenu = new Menu({
+			// function names tend to be longer, so override default width
+			width: "250px",
 			itemNames: [this.NEW_ACTION_TEXT],
 			itemActions: [
 				function(e, n){
@@ -309,7 +302,7 @@ class Path {
 	}
 	
 	stopConstructing(){
-		// create a new clickable for node
+		// create a new clickable for final node
 		new Clickable(this.nodes[this.activeNode], nodeContextMenu);
 		
 		this.activeNode = -1;
@@ -359,7 +352,8 @@ class Path {
 
 // UTILS
 
-// fetch available actions
+// fetch available actions from server
+// TODO: messy, fix up a bit
 function fetchActionsSync(){
 	let request = new XMLHttpRequest();
 	request.open('GET', '/validActions', false); // `false` makes the request synchronous
@@ -378,9 +372,116 @@ function fetchActionsSync(){
 			formattedActionNames.push(a.name + " (" + a.params.length + " params)");
 			itemActions.push(
 				function(e, n){
-					// TODO: not a complete action.  also needs to prompt for parameters, but I'm tired so good enough for now
-					n.nodeActions.push(a);
-					n.nodeActionMenu.addItems([a.name]);
+					// prompt for parameters
+					let parameterPrompt = new Prompt({
+						args: [a, n],
+						htmlContent: "<button id=\"close-button-parameter-prompt\">Done</button>", // rest is created dynamically by js
+						js: function(a, n){
+							this.itemContainer.style["background-color"] = "white";
+							
+							let closeButton = document.getElementById("close-button-parameter-prompt");
+							
+							let completedParams = {};
+							
+							let idText = "-input";
+							
+							closeButton.addEventListener("click", e => {
+								let paramString = "(";
+								
+								for(let i = 0; i < a.params.length; i++){
+									let param = a.params[i];
+									
+									let input = document.getElementById(param.name + idText);
+									
+									completedParams[param.name] = input.value;
+									
+									paramString += param.name + "=" + input.value + ", ";
+								}
+								
+								paramString += ")";
+								
+								// push action to node
+								n.nodeActions.push([a, completedParams]);
+								n.nodeActionMenu.addItems([a.name + " " + paramString]);
+					
+								this.hide();
+							});
+		
+							// for each parameter, create a label and an input box
+							for(let i = 0; i < a.params.length; i++){
+								let param = a.params[i];
+								
+								let label = document.createElement("label");
+								let input = document.createElement("input");
+								let br = document.createElement("br");
+								
+								// control input based on parameter type
+								// first switch: input type switch
+								// TODO: array/object support?
+								switch(param.type){
+									case "byte":
+									case "short":
+									case "int":
+									case "long":
+									case "boolean":
+										// can't store floating point values
+										// type is also a number
+										input.type = "number";
+										input.oninput="this.value=(parseInt(this.value)||0";
+										break;
+									case "float":
+									case "double":
+										// type is a number
+										input.type = "number";
+										break;
+									// otherwise default to text
+									default:
+										input.type = "text";
+										break;
+								}
+								
+								// special case stuff, mainly limits
+								switch(param.type){
+									case "byte":
+										input.min = "-128";
+										input.max = "127";
+										break;
+									case "short":
+										input.min = "-32768";
+										input.max = "32767";
+										break;
+									case "int":
+										input.min = "-2147483648";
+										input.max = "2147483647";
+										break;
+									case "long":
+										input.min = "-9223372036854775808"
+										input.max = "9223372036854775807";
+										break;
+									case "boolean":
+										input.min = "0";
+										input.max = "1";
+										break;
+									case "char":
+										input.maxLength = "1";
+										break;
+								}
+								
+								let id = param.name + idText;
+								
+								input.id = id;
+								label.for = id;
+								label.textContent = param.name + ":";
+								
+								// TODO: creating "br" each time is probably slow somehow
+								this.itemContainer.insertBefore(br, closeButton);
+								this.itemContainer.insertBefore(input, br);
+								this.itemContainer.insertBefore(label, input);
+							}
+						}
+					});
+					
+					parameterPrompt.show(e.clientX, e.clientY);
 				}
 			);
 		}

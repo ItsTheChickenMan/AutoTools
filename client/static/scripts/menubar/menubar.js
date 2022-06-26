@@ -36,7 +36,7 @@ class Prompt {
 		
 		// unlike a menu, this prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
 		if(options.js){
-			options.js.bind(this)(this.itemContainer);
+			options.js.bind(this)(...(options.args || []));
 		}
 	}
 	
