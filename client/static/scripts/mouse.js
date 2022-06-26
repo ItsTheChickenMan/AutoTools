@@ -32,7 +32,7 @@ class Clickable {
 	update(){
 		// check if parent object still exists
 		if(this.obj.dead){
-			// kill the reference to the object and then the clickable
+			// delete the reference to the object and then the clickable
 			this.obj = null;
 			clickables.splice(clickables.indexOf(this), 1);
 			

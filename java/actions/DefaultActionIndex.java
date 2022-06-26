@@ -29,7 +29,6 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Config;
 
 public class MecanumDefaultActionIndex extends Config {
   /**
@@ -66,4 +65,13 @@ public class MecanumDefaultActionIndex extends Config {
     this.backLeft.setPower(bl);
     this.backRight.setPower(br);
   }
+	
+	/**
+		*	@brief pivot
+		*
+		*	@param degrees amount, in degrees, to pivot
+	*/
+	public void pivot(double degrees, double speed){
+		// insert code here
+	}
 }

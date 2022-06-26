@@ -4,16 +4,22 @@
 let mainPath;
 
 // all currently loaded actions
-let loadedActions = [];
+let loadedActions = []; // actions in full table form
 
 // CLASSES
 
 // context menu for a node right click
 let nodeContextMenu = new Menu({
-	itemNames: ["Add Node Action", "Insert Node Before", "Insert Node After", "Change Node Position", "Delete Node"],
+	itemNames: ["Log to Console (Dev)", "See Node Actions", "Insert Node Before", "Insert Node After", "Change Node Position", "Delete Node"],
 	itemActions: [
 		function(e, n){ // add node action
 			console.log(n);
+		},
+		function(e, n){
+			// temporary fix for nodeActionMenu not showing up
+			n.nodeActionMenu.suppressHide = true;
+			
+			n.nodeActionMenu.show(e.clientX, e.clientY, [n]);
 		},
 		function(e, n){ // insert before
 			// insert a new node before n and set mainPath's active node to it
@@ -48,6 +54,11 @@ let nodeContextMenu = new Menu({
 	]
 });
 
+// gets changed by the program as actions are loaded
+let nodeActionListMenu = new Menu({
+	itemNames: [],
+	itemActions: []
+});
 
 // BOT CLASS
 class Bot {
@@ -149,6 +160,7 @@ class NodeAction {
 class Node {
 	NODE_SIZE = 15;
 	NODE_COLOR = "rgba(50, 168, 82, 255)";
+	NEW_ACTION_TEXT = "(add new node action)";
 	
 	// construct a new node
 	constructor(x, y, bot){
@@ -176,10 +188,12 @@ class Node {
 		
 		// the + adds actions
 		this.nodeActionMenu = new Menu({
-			itemNames: ["+"], // TODO: stylize the +
+			itemNames: [this.NEW_ACTION_TEXT],
 			itemActions: [
-				function(){
-					
+				function(e, n){
+					// temporary fix for nodeActionListMenu not showing up
+					nodeActionListMenu.suppressHide = true;
+					nodeActionListMenu.show(e.clientX, e.clientY, [n]);
 				}
 			]
 		});
@@ -353,9 +367,29 @@ function fetchActionsSync(){
 
 	if (request.status === 200) {
 		// load contents into json object
-		let actions = JSON.parse(request.responseText);
+		loadedActions = JSON.parse(request.responseText);
+	
+		// format for node action list
+		let formattedActionNames = [];
 		
-		// format actions
+		let itemActions = [];
 		
+		for(let a of loadedActions){
+			formattedActionNames.push(a.name + " (" + a.params.length + " params)");
+			itemActions.push(
+				function(e, n){
+					// TODO: not a complete action.  also needs to prompt for parameters, but I'm tired so good enough for now
+					n.nodeActions.push(a);
+					n.nodeActionMenu.addItems([a.name]);
+				}
+			);
+		}
+		
+		nodeActionListMenu = new Menu({
+			// function names tend to be longer, so override default width
+			width: "250px",
+			itemNames: formattedActionNames,
+			itemActions: itemActions
+		});
 	}
 }

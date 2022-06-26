@@ -5,7 +5,8 @@ let activeMenu = null;
 
 // default action function for menu
 function defaultAction(){
-	console.warn("No action is defined for this button/prompt.  You should define one in the itemActions property when constructing this Menu.");
+	// TODO: should console warn?
+	//console.warn("No action is defined for this button/prompt.  You should define one in the itemActions property when constructing this Menu.");
 }
 
 
@@ -18,7 +19,7 @@ class Prompt {
 		*
 		*	options: {
 		*		htmlContent: <html>, // string html for the prompt
-		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed with this in the function
+		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed within this in the function
 		*	}
 	*/
 	constructor(options){
@@ -72,6 +73,7 @@ class Menu {
 		*	@brief Constructs a new Menu from the options object provided
 		*
 		*	options: {
+		*		width: "", // override default width of 150px
 		*		itemNames: ["", ""], // ordered list of the item names on the context menu
 		*		itemActions: [ // ordered list of the actions taken when items are pressed
 		*			function(){
@@ -90,24 +92,10 @@ class Menu {
 		this.itemContainer.classList.add("menu-item-container");
 		this.hide(); // hide initially
 		
+		this.width = options.width;
+		
 		// create menu items
-		for(let i = 0; i < options.itemNames.length; i++){
-			// item name
-			let name = options.itemNames[i];
-			let action = options.itemActions[i] || defaultAction;
-			
-			// create buttons for each item name
-			let itemButton = document.createElement("button");
-			
-			itemButton.classList.add("menu-item");
-			
-			itemButton.textContent = name;
-			itemButton.addEventListener("mouseup", e => {
-				action(e, ...(this.args || []));
-			});
-			
-			this.itemContainer.appendChild(itemButton);
-		}
+		this.addItems(options.itemNames, options.itemActions);
 		
 		// push item container into document
 		document.body.appendChild(this.itemContainer);
@@ -126,6 +114,48 @@ class Menu {
 			// hide the menu
 			this.hide();
 		}.bind(this));
+	}
+	
+	// change item names without changing item actions.  better than reconstructing the menu each time you want to change the names
+	// if newNames is too short, it won't change the remaining names.  if newNames is too long, it will ignore the extra names provided
+	changeItemNames(newNames){
+		// loop through each item
+		for(let i = 0; i < Math.min(this.itemContainer.children.length, newNames.length); i++){
+			let item = this.itemContainer.children[i];
+			
+			item.textContent = newNames[i];
+		}
+	}
+	
+	// add items to this menu
+	// if newActions is too short, the default action is used for the remaining names
+	// if newActions is too long, extra actions are ignored
+	addItems(newNames, newActions){
+		// prevent bad iterator below if newActions is undefined
+		newActions = newActions || [];
+		
+		// create menu items
+		for(let i = 0; i < newNames.length; i++){
+			// item name
+			let name = newNames[i];
+			let action = (newActions[i] || defaultAction).bind(this);
+			
+			// create buttons for each item name
+			let itemButton = document.createElement("button");
+			
+			itemButton.classList.add("menu-item");
+			
+			if(this.width){
+				itemButton.style.width = this.width;
+			}
+			
+			itemButton.textContent = name;
+			itemButton.addEventListener("mouseup", e => {
+				action(e, ...(this.args || []));
+			});
+			
+			this.itemContainer.appendChild(itemButton);
+		}
 	}
 	
 	// show the menu at the coordinates
