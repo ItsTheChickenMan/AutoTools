@@ -18,6 +18,7 @@ class Prompt {
 		*	@brief Constructs a new Prompt from the options object provided
 		*
 		*	options: {
+		*		onHide: function(){}, // executed after prompt is hidden
 		*		htmlContent: <html>, // string html for the prompt
 		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed within this in the function
 		*	}
@@ -34,13 +35,19 @@ class Prompt {
 		// push item container into document
 		document.body.appendChild(this.itemContainer);
 		
-		// unlike a menu, this prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
+		// unlike a menu, prompt doesn't close or open by default under normal circumstances, it's expected that the prompt will have some sort of button or something that closes it
 		if(options.js){
 			options.js.bind(this)(...(options.args || []));
 		}
+		
+		if(options.onHide){
+			this.onHide = options.onHide;
+			
+			this.onHide.bind(this);
+		}
 	}
 	
-	// show the menu at the coordinates
+	// show the prompt at the coordinates
 	show(x, y){
 		this.itemContainer.style.display = "block";
 		this.itemContainer.style.top = y + "px";
@@ -53,13 +60,20 @@ class Prompt {
 		activeMenu = this;
 	}
 	
-	// hide the menu
+	// hide the prompt
 	hide(){
 		this.itemContainer.style.display = "none";
 		
 		this.visible = false;
 		
 		if(activeMenu == this) activeMenu = null;
+		
+		if(this.onHide) this.onHide();
+	}
+	
+	// permanently remove this prompt's html from the page
+	kill(){
+		this.itemContainer.remove();
 	}
 }
 
@@ -182,6 +196,11 @@ class Menu {
 		this.visible = false;
 		
 		if(activeMenu == this) activeMenu = null;
+	}
+	
+	// permanently remove this menu's html from the page
+	kill(){
+		this.itemContainer.remove();
 	}
 }
 

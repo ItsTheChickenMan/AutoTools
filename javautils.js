@@ -1,11 +1,16 @@
+// TODO: this entire file isn't tabbed correctly (tabbed with spaces) because it's from repl.  thanks repl!
+
 /**
- * @brief Return the class name of a class in a java file
+ * @brief Return the class name and class name of class it's inheriting of a class in a java file
  * 
  * @param file file data to pull class name from
  * @returns the class name 
  */
-function getClassName(file){
-  //const classRegex = 
+function getClassNameAndInheritance(file){
+	// gets classname string
+	const classRegex = /class .* extends .* {/gm;
+	
+	let classNameString = file.match(classRegex);
 }
 
 /**
@@ -90,10 +95,10 @@ function getJavaMethods(file){
           name: name,
           type: type
         });
-      }
+			}
     }
 
-    methods.push(method);
+		methods.push(method);
   }
 
   return methods;

@@ -33,7 +33,7 @@
 	flex-direction: column;
 	border-style: solid;
 	border-width: 1px;
-	position: fixed;
+	position: absolute;
 	margin: 0px;
 }
 

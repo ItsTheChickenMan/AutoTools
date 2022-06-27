@@ -230,11 +230,14 @@ class Node {
 		let rc = this.getRealCoordinates();
 		
 		return {
-			position: [rc.x, rc.y]
+			position: [rc.x, rc.y],
+			actions: this.nodeActions
 		};
 	}
 	
 	kill(){
+		this.nodeActionMenu.kill();
+		
 		this.dead = true;
 	}
 };
@@ -370,16 +373,23 @@ function fetchActionsSync(){
 		
 		for(let a of loadedActions){
 			formattedActionNames.push(a.name + " (" + a.params.length + " params)");
+			let closeButtonName = "close-button-" + a.name + "-" + a.params.length + "-parameter-prompt";
+			
 			itemActions.push(
 				function(e, n){
 					// prompt for parameters
-					let parameterPrompt = new Prompt({
+					new Prompt({
+						// one time prompt, delete when hidden
+						// this is just in case the user cancels the prompt, which would leave the html in the page
+						onHide: function(){
+							this.kill();
+						},
 						args: [a, n],
-						htmlContent: "<button id=\"close-button-parameter-prompt\">Done</button>", // rest is created dynamically by js
+						htmlContent: "<button id=\"" + closeButtonName + "\">Done</button>", // rest is created dynamically by js
 						js: function(a, n){
 							this.itemContainer.style["background-color"] = "white";
 							
-							let closeButton = document.getElementById("close-button-parameter-prompt");
+							let closeButton = document.getElementById(closeButtonName);
 							
 							let completedParams = {};
 							
@@ -398,13 +408,16 @@ function fetchActionsSync(){
 									paramString += param.name + "=" + input.value + ", ";
 								}
 								
+								// remove that pesky comma
+								paramString = paramString.slice(0, -2);
+								
 								paramString += ")";
 								
 								// push action to node
-								n.nodeActions.push([a, completedParams]);
+								n.nodeActions.push([a.name, completedParams]);
 								n.nodeActionMenu.addItems([a.name + " " + paramString]);
-					
-								this.hide();
+								
+								this.kill();
 							});
 		
 							// for each parameter, create a label and an input box
@@ -479,9 +492,7 @@ function fetchActionsSync(){
 								this.itemContainer.insertBefore(label, input);
 							}
 						}
-					});
-					
-					parameterPrompt.show(e.clientX, e.clientY);
+					}).show(e.clientX, e.clientY);
 				}
 			);
 		}
