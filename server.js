@@ -28,9 +28,10 @@ const app = express();
 
 // all loaded action indexes
 let actionIndexes = [];
+let availableMethods = [];
 
 // PATH TO JAVA SETUP
-loadActionIndex("./java/actions/DefaultActionIndex.java");
+loadActionIndex("./java/actions/MecanumDefaultActionIndex.java");
 
 // EXPRESS SETUP (done last)
 
@@ -46,7 +47,7 @@ app.get("/", (req, res) => {
 
 // return a list of all current available actions from ActionIndexs
 app.get("/validActions", (req, res) => {
-	res.send(JSON.stringify(actionIndexes)).end();
+	res.send(JSON.stringify(availableMethods)).end();
 });
 
 app.use(express.json());
@@ -79,6 +80,15 @@ function loadActionIndex(path){
 	// get all methods
 	let methods = javautils.getJavaMethods(file);
 	
+	let cni = javautils.getClassNameAndInheritance(file);
+	
+	let index = {
+		classname: cni[0],
+		superclassname: cni[1],
+		methods: methods
+	};
+	
 	// push to action indexes
-	actionIndexes.push(...methods);
+	actionIndexes.push(index);
+	availableMethods.push(...methods);
 }

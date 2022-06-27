@@ -440,7 +440,18 @@ function fetchActionsSync(){
 										// can't store floating point values
 										// type is also a number
 										input.type = "number";
-										input.oninput="this.value=(parseInt(this.value)||0";
+										input.oninput=function(){
+											// TODO: make this better	
+											let has = this.value.match(/\..*/g);
+											
+											if(has){
+												this.value = this.value.replace(/\..*/g, "");
+											
+												// unfocus to prevent the cursor from going wonky
+											
+												this.blur();
+											}
+										}
 										break;
 									case "float":
 									case "double":

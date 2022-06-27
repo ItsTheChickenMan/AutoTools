@@ -11,6 +11,10 @@ function getClassNameAndInheritance(file){
 	const classRegex = /class .* extends .* {/gm;
 	
 	let classNameString = file.match(classRegex);
+	
+	console.log(classNameString);
+	
+	return ["", ""];
 }
 
 /**
@@ -121,6 +125,6 @@ function getLineAtChar(data, index) {
 }
 
 module.exports = {
-	getClassName: getClassName,
+	getClassNameAndInheritance: getClassNameAndInheritance,
 	getJavaMethods: getJavaMethods
 };

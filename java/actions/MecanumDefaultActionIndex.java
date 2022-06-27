@@ -74,4 +74,8 @@ public class MecanumDefaultActionIndex extends Config {
 	public void pivot(double degrees, double speed){
 		// insert code here
 	}
+	
+	public void test(boolean a, char b, short c, int d, double e, String f){
+		
+	}
 }
