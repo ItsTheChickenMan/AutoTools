@@ -10,11 +10,22 @@ function getClassNameAndInheritance(file){
 	// gets classname string
 	const classRegex = /class .* extends .* {/gm;
 	
-	let classNameString = file.match(classRegex);
+	let classNameString = file.match(classRegex)[0];
 	
-	console.log(classNameString);
+	// split by spaces
+	let classNameSplit = classNameString.split(" ");
 	
-	return ["", ""];
+	if(classNameSplit[0] == "public") classNameSplit.shift();
+	
+	let out = [];
+	
+	for(let i = 1; i < classNameSplit.length; i += 2){
+		let keyword = classNameSplit[i];
+		
+		out.push(keyword);
+	}
+	
+	return out;
 }
 
 /**

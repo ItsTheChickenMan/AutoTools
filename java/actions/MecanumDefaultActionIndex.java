@@ -67,15 +67,17 @@ public class MecanumDefaultActionIndex extends Config {
   }
 	
 	/**
+		*	@brief Move some distance forward and sideways
+	*/
+	public void compoundMove(double forward, double strafe, double velocity){
+	}
+	
+	/**
 		*	@brief pivot
 		*
 		*	@param degrees amount, in degrees, to pivot
 	*/
 	public void pivot(double degrees, double speed){
 		// insert code here
-	}
-	
-	public void test(boolean a, char b, short c, int d, double e, String f){
-		
 	}
 }

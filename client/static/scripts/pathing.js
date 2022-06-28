@@ -329,6 +329,8 @@ class Path {
 	export(name){
 		let payload = this.createServerPayload(name);
 		
+		payload.name = name;
+		
 		console.log(payload);
 		
 		payload = JSON.stringify(payload);
@@ -445,6 +447,7 @@ function fetchActionsSync(){
 											let has = this.value.match(/\..*/g);
 											
 											if(has){
+												// NOTE: for some reason, .replace properly detects the decimal as it's typed, but .match doesn't...
 												this.value = this.value.replace(/\..*/g, "");
 											
 												// unfocus to prevent the cursor from going wonky
@@ -465,6 +468,7 @@ function fetchActionsSync(){
 								}
 								
 								// special case stuff, mainly limits
+								// TODO: limits don't work ATM, ignoring for now bc it doesn't really matter but it should be fixed eventually
 								switch(param.type){
 									case "byte":
 										input.min = "-128";

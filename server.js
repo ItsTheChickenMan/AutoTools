@@ -7,6 +7,7 @@ const path = require("path");
 const fs = require("fs");
 const Template = require("./template.js");
 const javautils = require("./javautils.js");
+const path2java = require("./path2java.js");
 
 // STATIC GLOBAL VARS
 
@@ -19,7 +20,7 @@ const clientRootDir = path.join(__dirname, clientDir);
 const staticDir = path.join(clientRootDir, "static");
 
 // root directory of java source output
-const javaOutDir = "./java/";
+const javaOutDir = "./java/out/";
 
 // express application
 const app = express();
@@ -54,7 +55,7 @@ app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
-	console.log(req.body);
+	path2java(req.body, javaOutDir + req.body.name, req.body.name, actionIndexes);
 	
 	// send back the folder the source is being exported into
 	res.send(javaOutDir).end();

@@ -1,3 +1,5 @@
+const fs = require("fs");
+
 // template class
 class Template {
   /**
@@ -22,7 +24,7 @@ class Template {
     this.tags = {};
     
     // load template
-    let f = loadFileSync(path);
+    let f = this.loadFileSync(path);
 
     if(f.length == 0){
       console.error("Template file is either empty or does not exist");
@@ -34,6 +36,10 @@ class Template {
     this.parseDataIntoTags();
   }
 
+	loadFileSync(path){
+		return fs.readFileSync(path).toString();
+	}
+	
   /**
    * @brief Parses this.data into tags
    */

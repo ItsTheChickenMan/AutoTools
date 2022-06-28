@@ -27,29 +27,28 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-// TODO: Custom Config path
-import org.firstinspires.ftc.teamcode.Config;
-
-// Action indexes (technically indices? doesn't sound as good)
+// action indexes
 $(actionIndexImport)
 
 public class $(name) extends $(actionIndex) {
-  @Override
-  public void runOpMode(){
-    // initialize parts
-    loadParts(); // defined in Config.java
-
-    // INIT //
-    while(!isStarted()){
-      $(init)
-    }
-
-    // MAIN //
-    $(main)
-
-    // FINAL //
-    while(opModeIsActive()){
-      $(final)
-    }
+	@Override
+	public void runOpMode(){
+		// initialize parts
+		loadParts(); // defined in Config.java
+		
+		// INIT //
+		$(initOnce)
+		
+		while(!isStarted()){
+			$(init)
+		}
+		
+		// MAIN //
+		$(main)
+		
+		// FINAL //
+		while(opModeIsActive()){
+			$(final)
+		}
   }
 }
