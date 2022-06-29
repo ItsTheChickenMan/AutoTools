@@ -93,7 +93,21 @@ class Template {
 
     this.tags[tag].data = data;
   }
-
+	
+	/**
+		*	@brief Add on to the contents of a tag block with additional data
+		*
+		* @param tag the tag to replace
+		* @param data the data to add to the tag block
+	*/
+	addToTag(tag, data){
+		if(!this.tags[tag] == undefined){
+			console.error("tag \"" + tag + "\" isn't in template");
+		}
+		
+		this.tags[tag].data += data;
+	}
+	
   /** 
    * @brief Replace all tag blocks with their data and return the output as a string
    * 

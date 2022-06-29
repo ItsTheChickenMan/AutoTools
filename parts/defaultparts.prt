@@ -1,0 +1,10 @@
+# each line should follow the pattern:
+# PartClassName	partNameInConfig
+# or, in words, the type of the part and the part's name as it appears in the configuration on the robot controller app, separated by whitespace, then followed by a new line for each additional part
+# to add a new part, simply follow the pattern
+# any line preceded by a hashtag will be ignored, and multiple prt files can be loaded (these are the defaults)
+
+DcMotorEx frontLeft
+DcMotorEx frontRight
+DcMotorEx backLeft
+DcMotorEx backRight

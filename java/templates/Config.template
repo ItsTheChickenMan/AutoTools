@@ -44,7 +44,7 @@ public class Config extends LinearOpMode {
 	private double xPosition;
 	private double yPosition;
 	
-  // part definitions
+  // part declarations
   $(defs)
   
 	public void setPosition(double x, double y){

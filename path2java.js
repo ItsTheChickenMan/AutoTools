@@ -25,8 +25,8 @@ function path2java(nodepath, outpath, name, actionIndexes){
 	// TODO: sort action indexes
 	
 	// load templates
-	let configTemplate = new Template("./templates/Config.template");
-	let autoTemplate = new Template("./templates/Auto.template");
+	let configTemplate = new Template("./java/templates/Config.template");
+	let autoTemplate = new Template("./java/templates/Auto.template");
 	
 	// make action index directory
 	let actionsIndexOutpath = outpath + "actions/";

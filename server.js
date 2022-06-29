@@ -8,6 +8,7 @@ const fs = require("fs");
 const Template = require("./template.js");
 const javautils = require("./javautils.js");
 const path2java = require("./path2java.js");
+const prt2config = require("./prt2config.js");
 
 // STATIC GLOBAL VARS
 
