@@ -40,9 +40,18 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 $(imports)
 
 public class Config extends LinearOpMode {
+	// bot location
+	private double xPosition;
+	private double yPosition;
+	
   // part definitions
   $(defs)
   
+	public void setPosition(double x, double y){
+		xPosition = x;
+		yPosition = y;
+	}
+	
   public void loadParts(){
     // load hardware
     $(load)

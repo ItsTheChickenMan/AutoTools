@@ -74,7 +74,7 @@ let m = new Menubar("menu-bar", {
 					console.log("Save");
 				},
 				function(){
-					if(mainPath) mainPath.export("Test.java");
+					if(mainPath) mainPath.export("Test");
 				}
 			]
 		},

@@ -55,7 +55,7 @@ app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
-	path2java(req.body, javaOutDir + req.body.name, req.body.name, actionIndexes);
+	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes);
 	
 	// send back the folder the source is being exported into
 	res.send(javaOutDir).end();
@@ -63,7 +63,7 @@ app.post("/export", (req, res) => {
 
 // load a new action index from a file when instructed by the client
 app.post("/newActionIndex", (req, res) => {
-	
+	loadActionIndex(req.path);
 });
 
 // start listening
@@ -86,6 +86,7 @@ function loadActionIndex(path){
 	let index = {
 		classname: cni[0],
 		superclassname: cni[1],
+		path: path,
 		methods: methods
 	};
 	
