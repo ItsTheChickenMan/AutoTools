@@ -33,7 +33,12 @@ let actionIndexes = [];
 let availableMethods = [];
 
 // PATH TO JAVA SETUP
+
+// load default action index
 loadActionIndex("./java/actions/MecanumDefaultActionIndex.java");
+
+// load default part file
+prt2config("./parts/defaultparts.prt");
 
 // EXPRESS SETUP (done last)
 

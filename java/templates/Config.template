@@ -1,4 +1,3 @@
-
 /**
   * @brief Configuration class which contains definitions for every part of the bot (usually gotten through hardwareMap.get)
   *
@@ -44,16 +43,16 @@ public class Config extends LinearOpMode {
 	private double xPosition;
 	private double yPosition;
 	
-  // part declarations
-  $(defs)
+	// part declarations
+	$(defs)
   
 	public void setPosition(double x, double y){
 		xPosition = x;
 		yPosition = y;
 	}
 	
-  public void loadParts(){
-    // load hardware
-    $(load)
-  }
+	public void loadParts(){
+		// load hardware
+		$(load)
+	}
 }
