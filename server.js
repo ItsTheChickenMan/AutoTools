@@ -38,7 +38,7 @@ let availableMethods = [];
 loadActionIndex("./java/actions/MecanumDefaultActionIndex.java");
 
 // load default part file
-prt2config("./parts/defaultparts.prt");
+let configTemplate = prt2config("./parts/defaultparts.prt");
 
 // EXPRESS SETUP (done last)
 
@@ -61,7 +61,7 @@ app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
-	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes);
+	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate);
 	
 	// send back the folder the source is being exported into
 	res.send(javaOutDir).end();

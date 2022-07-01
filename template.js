@@ -57,7 +57,7 @@ class Template {
       // parse tag
       if(parsing){
         // check if block is over
-        if(currentByte == ')' && lastByte != '\\'){
+        if( (currentByte == ')' || currentByte == ']') && lastByte != '\\'){
           currentEnd = i;
 
           // push tag
@@ -65,11 +65,12 @@ class Template {
             tag: currentTag,
             start: currentStart,
             end: currentEnd,
-            data: ""
+            data: "",
+						enclosures: currentByte == ")" ? ["(", ")"] : ["[", "]"]
           };
 
           parsing = false;
-        } else if(currentByte != '\\' && (currentByte != '(' || (currentByte == '(' && lastByte == '\\') ) ){
+        } else if(currentByte != '\\' && ( (currentByte != '(' && currentByte != '[') || ( (currentByte == '(' || currentByte == '[') && lastByte == '\\') ) ){
           currentTag += currentByte;
         }
       } else if(currentByte == '$' && lastByte != '\\'){
@@ -89,20 +90,22 @@ class Template {
   replaceTag(tag, data){
     if(this.tags[tag] == undefined){
       console.error("tag \"" + tag + "\" isn't in template");
+			return;
     }
 
     this.tags[tag].data = data;
   }
 	
 	/**
-		*	@brief Add on to the contents of a tag block with additional data
+		* @brief Add on to the contents of a tag block with additional data
 		*
 		* @param tag the tag to replace
 		* @param data the data to add to the tag block
 	*/
 	addToTag(tag, data){
-		if(!this.tags[tag] == undefined){
+		if(this.tags[tag] == undefined){
 			console.error("tag \"" + tag + "\" isn't in template");
+			return;
 		}
 		
 		this.tags[tag].data += data;
@@ -120,8 +123,15 @@ class Template {
     // replace tags with data
     for(let i of Object.keys(this.tags)){
       let tag = this.tags[i];
-
-      datacopy = datacopy.replace("$(" + tag.tag + ")", tag.data);
+			
+			// if tag contains any parenthesis or dollar signs, be sure to include those with slashes so the real tag is found
+			tag.tag = tag.tag.replace(/\(/g, "\\(");
+			tag.tag = tag.tag.replace(/\)/g, "\\)");
+			tag.tag = tag.tag.replace(/\$/g, "\\$");
+			tag.tag = tag.tag.replace(/\[/g, "\\[");
+			tag.tag = tag.tag.replace(/\]/g, "\\]");
+			
+      datacopy = datacopy.replace("$" + tag.enclosures[0] + tag.tag + tag.enclosures[1], tag.data);
     }
 
     datacopy += eofString || "";

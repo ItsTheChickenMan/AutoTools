@@ -25,17 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 // TODO: custom package?
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.actions;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 // part imports
-// NOTE: there may be duplicate imports from above, these are ignored by the compiler but can be safely removed if desired
 $(imports)
 
 public class Config extends LinearOpMode {
@@ -44,11 +41,11 @@ public class Config extends LinearOpMode {
 	private double yPosition;
 	
 	// part declarations
-	$(defs)
-  
+	$(declarations)
+	
 	public void setPosition(double x, double y){
-		xPosition = x;
-		yPosition = y;
+		this.xPosition = x;
+		this.yPosition = y;
 	}
 	
 	public void loadParts(){

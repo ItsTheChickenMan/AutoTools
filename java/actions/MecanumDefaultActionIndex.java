@@ -25,11 +25,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-package actions;
+package org.firstinspires.ftc.teamcode.actions;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-public class MecanumDefaultActionIndex extends $(superclass) {
+// NOTE: be sure to use bracket notation for templates in the superclass template block
+public class MecanumDefaultActionIndex extends $[superclass] {
   /**
     * @brief Global timer for timing actions
   */

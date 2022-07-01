@@ -28,7 +28,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 // action indexes
-import actions.*;
+import org.firstinspires.ftc.teamcode.actions.*;
 
 public class $(name) extends $(actionIndex) {
 	@Override

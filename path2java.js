@@ -20,29 +20,37 @@ const defaultMovementAction = "goTo";
 // it will write all necessary files into the path provided by outpath
 // the name of the auto itself will be the parameter name
 // actionIndexes is all actionIndexes in use by the auto
-function path2java(nodepath, outpath, name, actionIndexes){
+// configTemplate is the template where config info is currently stored
+function path2java(nodepath, outpath, name, actionIndexes, configTemplate){
 	// compile action indexes
 	// TODO: sort action indexes
 	
 	// load templates
-	let configTemplate = new Template("./java/templates/Config.template");
 	let autoTemplate = new Template("./java/templates/Auto.template");
 	
 	// make action index directory
 	let actionsIndexOutpath = outpath + "actions/";
-	
+		
 	fs.mkdir(actionsIndexOutpath, {recursive: true}, err => {
 		if(err){
 			console.error("Couldn't make output directory for actions");
 			return;
 		}
 		
+		// first write out config file
+		let configString = configTemplate.writeOutput();
+		
+		fs.writeFile(actionsIndexOutpath + "Config.java", configString, err => {
+			if(err) console.error("Couldn't create Config.java");
+			return;
+		});
+		
 		// loop through each index replacing $(superclass) with the appropriate superclass and writing to outpath
 		for(let i = 0; i < actionIndexes.length; i++){
 			let a = actionIndexes[i];
 			
 			// if action index has a blank superclass $(superclass), load it into a template and make superclass the previous action indexs
-			if(a.superclassname == "$(superclass)"){
+			if(a.superclassname == "$(superclass)" || a.superclassname == "$[superclass]"){
 				let actionIndexTemplate = new Template(a.path);
 				let superIndexString = i == 0 ? "Config" : actionIndexes[i-1].name;
 				
@@ -74,6 +82,9 @@ function path2java(nodepath, outpath, name, actionIndexes){
 	
 	// replace auto name with name
 	autoTemplate.replaceTag("name", name);
+	
+	// for now, the last action index in the list is the one that the auto inherits
+	autoTemplate.replaceTag("actionIndex", actionIndexes[actionIndexes.length-1].classname);
 	
 	// INITONCE
 	let tab = 2; // number of tabs to indent each line, changes depending on block
@@ -154,6 +165,7 @@ function path2java(nodepath, outpath, name, actionIndexes){
 			return;
 		}
 		
+		// write auto file to out
 		fs.writeFileSync(outpath + name + ".java", autoFile);
 	});
 }

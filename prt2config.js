@@ -7,13 +7,11 @@ const Template = require("./template.js");
 const fs = require("fs");
 const fetch = require("node-fetch");
 
-let partImports = {
-	
-};
-
 // the config template, manages all part imports and definitions
 const configTemplate = new Template("./java/templates/Config.template");
 
+// don't use this for anything yet
+// TODO: fix this
 // load all imports from PART_IMPORTS.dat (called when the module is loaded, and that's it)
 function loadImports(){
 	// load file
@@ -37,14 +35,17 @@ function loadImports(){
 			// otherwise split line by spaces and add to partImports
 			line = line.split(" ");
 			
-			partImports[line[0]] = line[1];
+			let classname = line.shift();
+			
+			partImports[classname] = line;
 		}
 	});
 }
 
+// TODO: make not dumb
 // find the necessary import(s?) for a part type (class)
 function getImports(classname){
-	return partImports[classname];
+	return ["com.qualcomm.robotcore.hardware." + classname];
 }
 
 // load each part of a prt file
@@ -61,12 +62,10 @@ function loadPartFile(path){
 	// split contents by newlines
 	let lines = contents.split("\n");
 	
+	// parts
 	let parts = [];
 	
-	// for each line, load a new part if applicable
-	for(let i = 0; i < lines.length; i++){
-		let line = lines[i];
-		
+	for(let line of lines){
 		// line starts with #?  ignore
 		if(line.charAt(0) == '#') continue;
 		
@@ -79,32 +78,59 @@ function loadPartFile(path){
 		// more or less than 2 words? ignore
 		if(!words || words.length != 2) continue;
 		
-		// add new imports
-		let im = getImports(words[0]) + "\n";
+		let part = {
+			type: words[0],
+			name: words[1]
+		};
 		
-		configTemplate.addToTag("imports", im);
+		parts.push(part);
 	}
 	
-	console.log(configTemplate.writeOutput());
+	return parts;
 }
 
 // loads parts into config from prt files
 // the config template is permanently cached by this file and can be updated at any time for use in exporting
-function prt2config(prtFilePath){
-	// part imports
-	let partImports = "";
-	
-	// part declarations
-	let partDeclarations = "";
-	
-	// part definitions
-	let partDefinitions = "";
-	
+// returns the config templater
+function prt2config(prtFilePath, outpath){
 	// load part file
-	loadPartFile(prtFilePath);
+	let parts = loadPartFile(prtFilePath);
+	
+	// all types whose imports have been gotten (to avoid duplicate imports)
+	let importedTypes = [];
+	
+	// initial newlines in some places for proper tabbing
+	// TODO: automatic tabbing by template.js
+	configTemplate.addToTag("declarations", "\n");
+	configTemplate.addToTag("load", "\n");
+	
+	// for each part, add to config template as necessary
+	for(let part of parts){
+		// add imports
+		if(!importedTypes.includes(part.type)){
+			let imports = getImports(part.type);
+			
+			for(let i of imports){
+				configTemplate.addToTag("imports", "import " + i + ";\n");
+			}
+			
+			importedTypes.push(part.type);
+		}
+		
+		// add to declarations
+		let declaration = "\tprivate " + part.type + " " + part.name + ";\n";
+		
+		configTemplate.addToTag("declarations", declaration);
+		
+		// add to load method
+		// NOTE: should type cast be here?  good for neatness but not totally necessary
+		let load = "\t\t" + part.name + " = " + "(" + part.type + ")" + "hardwareMap.get(" + part.type + ".class, \"" + part.name + "\");\n";
+		
+		configTemplate.addToTag("load", load);
+	}
+	
+	return configTemplate;
 }
 
 // MAIN
-loadImports();
-
 module.exports = prt2config;
