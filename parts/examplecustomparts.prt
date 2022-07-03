@@ -1,0 +1,11 @@
+# this file demonstrates how you can add custom "parts" to your auto
+# "parts" are any actuators, sensors, etc. that your robot has which can be configured in the driver station app
+# to add parts to this file, follow the format:
+# PartClassName	partNameInConfig
+# to use these parts in your autonomous, go to the GUI and press the "Add Part File" option under the "File" menu, which will add these parts to your Auto by adding them to Config.java
+# often times, a new action index will require an associated part file so that the parts which the action index references are present in Config.java.  See ./java/actions/ExampleCustomActionIndex.java for more info on that
+# the below parts are example parts
+
+DcMotorEx intakeMotor
+DistanceSensor cargoSensor
+BNO055IMU imu

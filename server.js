@@ -20,8 +20,15 @@ const clientDir = "./client/";
 const clientRootDir = path.join(__dirname, clientDir);
 const staticDir = path.join(clientRootDir, "static");
 
-// root directory of java source output
+// java dirs //
+// directory for java source output
 const javaOutDir = "./java/out/";
+
+// directory for action indexes
+const javaActionIndexDir = "./java/actions/";
+
+// directory for parts
+const partFileDir = "./parts/"
 
 // express application
 const app = express();
@@ -35,7 +42,7 @@ let availableMethods = [];
 // PATH TO JAVA SETUP
 
 // load default action index
-loadActionIndex("./java/actions/MecanumDefaultActionIndex.java");
+loadActionIndex(javaActionIndexDir + "MecanumDefaultActionIndex.java");
 
 // load default part file
 let configTemplate = prt2config("./parts/defaultparts.prt");
@@ -69,7 +76,18 @@ app.post("/export", (req, res) => {
 
 // load a new action index from a file when instructed by the client
 app.post("/newActionIndex", (req, res) => {
-	loadActionIndex(req.path);
+	loadActionIndex(javaActionIndexDir + req.body.name);
+	
+	// let the client know that it's taken care of
+	res.send("Done").end();
+});
+
+// load a new part file from a file when instructed by the client
+app.post("/newPartFile", (req, res) => {
+	configTemplate = prt2config(partFileDir + req.body.name);
+	
+	// let the client know that it's taken care of
+	res.send("Done").end();
 });
 
 // start listening
@@ -85,7 +103,7 @@ function loadActionIndex(path){
 	let file = fs.readFileSync(path).toString();
 	
 	// get all methods
-	let methods = javautils.getJavaMethods(file);
+	let methods = javautils.getJavaMethods(file, ["public"]); // ignore protected or private methods
 	
 	let cni = javautils.getClassNameAndInheritance(file);
 	

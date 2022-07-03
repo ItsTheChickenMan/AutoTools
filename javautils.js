@@ -49,12 +49,16 @@ function getClassNameAndInheritance(file){
  * }
  * 
  * @param file data to pull methods from
+ * @param includeScopes array of string scopes to include in response (others will be excluded)
  * @return an array of methods represented as tables
  */
-function getJavaMethods(file){
+function getJavaMethods(file, includedScopes){
   // get file
   //const file = loadFileSync(path);
 
+	// if there's no array for included scopes, include them all
+	includedScopes = includedScopes || ["public", "protected", "private"];
+	
   // search for function pattern
   // ){ <- indicates the start of a function block
   const funcRegex = /\)\s*{|\)\s*\n\s*{/g; // I'm not good with regex, if you couldn't tell
@@ -85,7 +89,7 @@ function getJavaMethods(file){
     let static = keywords[1] == "static" ? true : false;
     let returns = static ? 2 : 1;
     let name = returns+1;
-
+		
     let method = {
       scope: keywords[scope],
       static: static,
@@ -94,6 +98,11 @@ function getJavaMethods(file){
       params: []
     };
 
+		// ignore method if scope isn't included
+		if(!includedScopes.includes(method.scope)){
+			continue;
+		}
+		
     // get parameters
     keywords = keywords.slice(name+1);
 

@@ -91,17 +91,17 @@ function loadPartFile(path){
 
 // loads parts into config from prt files
 // the config template is permanently cached by this file and can be updated at any time for use in exporting
-// returns the config templater
-function prt2config(prtFilePath, outpath){
+// returns the config template
+function prt2config(prtFilePath){
 	// load part file
 	let parts = loadPartFile(prtFilePath);
 	
 	// all types whose imports have been gotten (to avoid duplicate imports)
 	let importedTypes = [];
 	
-	// initial newlines in some places for proper tabbing
+	// initial newlines in some places for proper tabbing + comments indicating which part file this is
 	// TODO: automatic tabbing by template.js
-	configTemplate.addToTag("declarations", "\n");
+	configTemplate.addToTag("declarations", "\n\t//" + prtFilePath + "\n");
 	configTemplate.addToTag("load", "\n");
 	
 	// for each part, add to config template as necessary

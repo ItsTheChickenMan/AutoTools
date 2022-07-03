@@ -63,18 +63,96 @@ let m = new Menubar("menu-bar", {
 	items: [
 		{
 			name: "File",
-			itemNames: ["New", "Save", "Export"],
+			itemNames: ["Add Action Index", "Add Part File", "Export"],
 			itemActions: [
-				function(){
-					// TODO: do
-					console.log("New");
+				function(mouseEvent){
+					// prompt user (TODO: decide on standards between making a permanent prompt and using parameters vs. making a temporary prompt?)
+					let actionIndexPrompt = new Prompt({
+						// delete when hidden
+						onHide: function(){ this.kill(); },
+						htmlContent: "<p>NOTE: Action indexes MUST be in ./java/actions/</p><input id=\"action-index-input\" type=\"file\" accept=\".java\" multiple=\"false\"><br/><button id=\"done-button\">Done</button>",
+						js: function(){
+							this.itemContainer.style["background-color"] = "white";
+							
+							let inputElement = document.getElementById("action-index-input");
+							let doneButton = document.getElementById("done-button");
+							let selectedActionIndex = null;
+							
+							inputElement.addEventListener("change", e => {
+								selectedActionIndex = inputElement.files[0].name;
+							});
+							
+							doneButton.addEventListener("click", e => {
+								if(selectedActionIndex){
+									// tell server to add this action index
+									fetch("/newActionIndex", {
+										method: "POST",
+										headers: new Headers({'Content-Type': 'application/json'}),
+										body: JSON.stringify({
+											name: selectedActionIndex
+										})
+									})
+									.then(res => res.text())
+									.then(alert)
+									.then(e => {
+										// re-fetch methods
+										fetchActionsSync();
+									})
+									.catch(alert);
+								}
+								
+								this.hide();
+							});
+						}
+					});
+					
+					actionIndexPrompt.show(mouseEvent.clientX, mouseEvent.clientY);
+				},
+				function(mouseEvent){
+					// prompt user
+					let partFilePrompt = new Prompt({
+						// delete when hidden
+						onHide: function(){ this.kill(); },
+						htmlContent: "<p>NOTE: Part files MUST be in ./parts/</p><input id=\"part-file-input\" type=\"file\" accept=\".prt\" multiple=\"false\"><br/><button id=\"done-button\">Done</button>",
+						js: function(){
+							this.itemContainer.style["background-color"] = "white";
+							
+							let inputElement = document.getElementById("part-file-input");
+							let doneButton = document.getElementById("done-button");
+							let selectedPartFile = null;
+							
+							inputElement.addEventListener("change", e => {
+								selectedPartFile = inputElement.files[0].name;
+							});
+							
+							doneButton.addEventListener("click", e => {
+								if(selectedPartFile){
+									// tell server to add this action index
+									fetch("/newPartFile", {
+										method: "POST",
+										headers: new Headers({'Content-Type': 'application/json'}),
+										body: JSON.stringify({
+											name: selectedPartFile
+										})
+									})
+									.then(res => res.text())
+									.then(alert)
+									.catch(alert);
+								}
+								
+								this.hide();
+							});
+						}
+					});
+					
+					partFilePrompt.show(mouseEvent.clientX, mouseEvent.clientY);
 				},
 				function(){
-					// TODO: do
-					console.log("Save");
-				},
-				function(){
-					if(mainPath) mainPath.export("Test");
+					if(mainPath){ 
+						mainPath.export("Test");
+					} else {
+						alert("No path, nothing to export");
+					}
 				}
 			]
 		},

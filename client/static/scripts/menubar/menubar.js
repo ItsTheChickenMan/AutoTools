@@ -18,7 +18,7 @@ class Prompt {
 		*	@brief Constructs a new Prompt from the options object provided
 		*
 		*	options: {
-		*		onHide: function(){}, // executed after prompt is hidden
+		*		onHide: function(){}, // executed after prompt is hidden (bound to this instance)
 		*		htmlContent: <html>, // string html for the prompt
 		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed within this in the function
 		*	}
