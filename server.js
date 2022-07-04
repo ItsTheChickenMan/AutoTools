@@ -22,13 +22,14 @@ const staticDir = path.join(clientRootDir, "static");
 
 // java dirs //
 // directory for java source output
-const javaOutDir = "./java/out/";
+let javaOutDir = "./java/out/";
 
 // directory for action indexes
-const javaActionIndexDir = "./java/actions/";
+// TODO: allow user to change (can't ATM because the server has no way of communicating the directory to the client)
+let javaActionIndexDir = "./java/actions/";
 
 // directory for parts
-const partFileDir = "./parts/"
+let partFileDir = "./parts/";
 
 // express application
 const app = express();
@@ -46,6 +47,14 @@ loadActionIndex(javaActionIndexDir + "MecanumDefaultActionIndex.java");
 
 // load default part file
 let configTemplate = prt2config("./parts/defaultparts.prt");
+
+// SETTINGS
+
+// parse settings
+let settings = parseListFile("./settings.txt", '#', '\n', '=', "key-val");
+
+let teamName = settings.teamName || "No Team Specified";
+
 
 // EXPRESS SETUP (done last)
 

@@ -1,0 +1,12 @@
+# various settings for the editor
+# changing any of these requires a restart of the editor
+
+# the port which the server uses to host the editor
+# the editor can be visited by going to localhost:port (localhost:8080 by default)
+port=8080
+
+# the name of the team using this for use in copyright statements at the beginning of the generated auto
+teamName=FIRST Tech Challenge Team 0000
+
+# the directory which autos output to
+javaOutDir=./java/out/
