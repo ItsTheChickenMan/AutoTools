@@ -13,7 +13,7 @@ const configTemplate = new Template("./java/templates/Config.template");
 
 // parseListFile constants
 let parserCommentChar = '#';
-let parserSeparator = '\n';
+let parserSeparator = /\r?\n/;
 let parserSubSeparator = ' ';
 
 // don't use this for anything yet

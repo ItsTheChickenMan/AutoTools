@@ -9,11 +9,12 @@ const Template = require("./template.js");
 const javautils = require("./javautils.js");
 const path2java = require("./path2java.js");
 const prt2config = require("./prt2config.js");
+const parseListFile = require("./parseListFile.js");
 
 // STATIC GLOBAL VARS
 
 // port for the client window, 8080 by default for now.
-const port = 8080;
+let port = 8080;
 
 // root directory of client files
 const clientDir = "./client/";
@@ -51,9 +52,12 @@ let configTemplate = prt2config("./parts/defaultparts.prt");
 // SETTINGS
 
 // parse settings
-let settings = parseListFile("./settings.txt", '#', '\n', '=', "key-val");
+let settings = parseListFile("./settings.txt", '#', /\r?\n/, '=', "key-val");
 
+// store settings into appropriate values
 let teamName = settings.teamName || "No Team Specified";
+port = settings.port;
+javaOutDir = settings.javaOutDir;
 
 
 // EXPRESS SETUP (done last)
@@ -77,7 +81,7 @@ app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
-	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate);
+	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, teamName);
 	
 	// send back the folder the source is being exported into
 	res.send(javaOutDir).end();

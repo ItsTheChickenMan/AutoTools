@@ -22,7 +22,8 @@ const defaultMovementAction = "goTo";
 // the name of the auto itself will be the parameter name
 // actionIndexes is all actionIndexes in use by the auto
 // configTemplate is the template where config info is currently stored
-function path2java(nodepath, outpath, name, actionIndexes, configTemplate){
+// teamName is the name of the team to use in copyright statements
+function path2java(nodepath, outpath, name, actionIndexes, configTemplate, teamName){
 	// compile action indexes
 	// TODO: sort action indexes
 	
@@ -70,9 +71,6 @@ function path2java(nodepath, outpath, name, actionIndexes, configTemplate){
 	
 	// figure out what year it is
 	let year = new Date().getFullYear();
-	
-	// team name
-	let teamName = "FIRST Tech Challenge Team 13406"; // TODO: allow change
 	
 	// throw year and team name into copyright notice
 	configTemplate.replaceTag("year", year);
