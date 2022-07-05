@@ -77,8 +77,9 @@ let m = new Menubar("menu-bar", {
 		{
 			name: "Path",
 			itemNames: ["Add Action Index", "Add Part File", "See Global Variables"],
-			itemAction: [
+			itemActions: [
 				function(mouseEvent){
+					console.log(mouseEvent);
 					// prompt user (TODO: decide on standards between making a permanent prompt and using parameters vs. making a temporary prompt?)
 					let actionIndexPrompt = new Prompt({
 						// delete when hidden
