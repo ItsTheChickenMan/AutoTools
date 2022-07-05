@@ -63,8 +63,21 @@ let m = new Menubar("menu-bar", {
 	items: [
 		{
 			name: "File",
-			itemNames: ["Add Action Index", "Add Part File", "Export"],
+			itemNames: ["Export"],
 			itemActions: [
+				function(){
+					if(mainPath){ 
+						mainPath.export("Test");
+					} else {
+						alert("No path, nothing to export");
+					}
+				}
+			]
+		},
+		{
+			name: "Path",
+			itemNames: ["Add Action Index", "Add Part File", "See Global Variables"],
+			itemAction: [
 				function(mouseEvent){
 					// prompt user (TODO: decide on standards between making a permanent prompt and using parameters vs. making a temporary prompt?)
 					let actionIndexPrompt = new Prompt({
@@ -147,12 +160,8 @@ let m = new Menubar("menu-bar", {
 					
 					partFilePrompt.show(mouseEvent.clientX, mouseEvent.clientY);
 				},
-				function(){
-					if(mainPath){ 
-						mainPath.export("Test");
-					} else {
-						alert("No path, nothing to export");
-					}
+				function(mouseEvent){
+					
 				}
 			]
 		},

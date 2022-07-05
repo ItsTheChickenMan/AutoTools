@@ -6,7 +6,7 @@ let mainPath;
 // all currently loaded actions
 let loadedActions = []; // actions in full table form
 
-// CLASSES
+// MENUS
 
 // context menu for a node right click
 let nodeContextMenu = new Menu({
@@ -59,6 +59,36 @@ let nodeActionListMenu = new Menu({
 	itemNames: [],
 	itemActions: []
 });
+
+
+// CLASSES
+
+// GLOBAL VARIABLE MANAGER
+/**
+	*	@brief Handles global variables for a path, although it's not necessarily specific to any particular path
+	*
+	*	Global variables are variables stored in Config.java which can be accessed and modified at any point during the auto by any node.  They can be used as parameters to node actions, modified as a node action, or used within a node action in code.
+	*	
+	*	The basic idea behind global variables is to store and access unknown values, such as sensor inputs, between different nodes and node actions (which would save the programmer from having to create a unique node action and global variable within their custom action index in order to do so).
+	*
+	*	Creating and managing global variables:
+	*	- Global variables will only be available in the GUI if created within the GUI.
+	*	- Any global variable created in the GUI will be added to Config.java in the public scope.  This is to make it accessible to all action indexes.  There is no encapsulation, the variable can just be accessed directly.  This is because I can't be bothered to program get/set method generation for each variable when there's absolutely no point to data encapsulation given the context of this project.
+	*	- If a global variable is already defined within another action index when one is created with the GUI, there will probably be a problem, but this is subject to change in the future.
+	*
+	*	@todo Have any parsed action indexes also keep track of any attributes which they define and check for naming conflicts whenever global variables are created.
+*/
+class GlobalVariableManager {
+	
+	
+	/**
+		*	
+	*/
+	constructor(){
+		
+	}
+};
+
 
 // BOT CLASS
 class Bot {

@@ -5,11 +5,11 @@
 const express = require("express"); // express for hosting
 const path = require("path");
 const fs = require("fs");
-const Template = require("./template.js");
-const javautils = require("./javautils.js");
-const path2java = require("./path2java.js");
-const prt2config = require("./prt2config.js");
-const parseListFile = require("./parseListFile.js");
+const Template = require("./scripts/template.js");
+const javautils = require("./scripts/javautils.js");
+const path2java = require("./scripts/path2java.js");
+const prt2config = require("./scripts/prt2config.js");
+const parseListFile = require("./scripts/parseListFile.js");
 
 // STATIC GLOBAL VARS
 

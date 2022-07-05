@@ -18,3 +18,7 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 ### Do For Fun:
 
 - Allow user to download their autonomous as an annotated image of the path (for competition)
+- Sort files a bit better
+- Make README a bit more descriptive and helpful
+- Workaround for bad javascript floats (large amounts of trailing decimals like 108.86399999999999)
+- Fix documentation (flips too often between verbose javadoc style and quick dev comments)
