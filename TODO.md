@@ -9,7 +9,7 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 - Implement the default action index for four wheel mecanum drive (no odometry?)
 - Save/Load paths
 - Save/Load action index and prt file configurations (needs to be added every time the program is restarted rn)
-- Allow user to create and modify global variables
+- Finalize/test global variable implementation
 
 ### Low Priority:
 

@@ -33,15 +33,26 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 // part imports
+// NOTE: there may be duplicate imports; these are ignored by the compiler but can be safely removed if desired
 $(imports)
 
 public class Config extends LinearOpMode {
+	// part declarations
+	$(declarations)
+	
+	// global variables
+	
+	
+	// predefined:
+	
 	// bot location
 	private double xPosition;
 	private double yPosition;
 	
-	// part declarations
-	$(declarations)
+	
+	// user defined:
+	$(globalVars)
+	
 	
 	public void setPosition(double x, double y){
 		this.xPosition = x;

@@ -1,4 +1,4 @@
-// tiny side thing for creating menus/menu buttons/menubars
+// tiny side thing for creating menus/menu buttons/menubars/etc.
 
 // menu currently open 
 let activeMenu = null;
@@ -18,13 +18,15 @@ class Prompt {
 		*	@brief Constructs a new Prompt from the options object provided
 		*
 		*	options: {
+		*		killOnHide: (boolean), // if this prompt should be killed when hidden (good for one-time prompts)
 		*		onHide: function(){}, // executed after prompt is hidden (bound to this instance)
 		*		htmlContent: <html>, // string html for the prompt
-		*		js: function(container){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed within this in the function
+		*		args: [arg1, arg2, ...], // arguments for the js function
+		*		js: function(arg1, arg2, ...){}, // js function which runs when the prompt is created, for setting event listeners, etc.  it will be bound to the class instance, so every attribute/method can be accessed within this in the function
 		*	}
 	*/
 	constructor(options){
-		this.htmlContent = options.htmlContent || "<div></div>";
+		this.htmlContent = options.htmlContent || "";
 
 		this.itemContainer = document.createElement("div");
 		this.itemContainer.classList.add("menu-item-container");
@@ -45,6 +47,8 @@ class Prompt {
 			
 			this.onHide.bind(this);
 		}
+		
+		this.killOnHide = options.killOnHide;
 	}
 	
 	// show the prompt at the coordinates
@@ -69,6 +73,8 @@ class Prompt {
 		if(activeMenu == this) activeMenu = null;
 		
 		if(this.onHide) this.onHide();
+		
+		if(this.killOnHide) this.kill();
 	}
 	
 	// permanently remove this prompt's html from the page
@@ -88,6 +94,7 @@ class Menu {
 		*
 		*	options: {
 		*		width: "", // override default width of 150px
+		*		height: "", // if undefined, the height will expand dynamically depending on the number of elements.  if defined, the menu will have this set height and will enable the scrollbar for overflow.
 		*		itemNames: ["", ""], // ordered list of the item names on the context menu
 		*		itemActions: [ // ordered list of the actions taken when items are pressed
 		*			function(){
@@ -107,8 +114,20 @@ class Menu {
 		this.hide(); // hide initially
 		
 		this.width = options.width;
+		this.height = options.height || "";
+		
+		// set height, if provided
+		if(this.height.length > 0){
+			// set container height to provided value
+			this.itemContainer.style.height = this.height;
+			
+			// enable scrollbar
+			this.itemContainer.style["overflow-y"] = "auto";
+			this.itemContainer.style["overflow-x"] = "hidden"; // disable for x scrolling
+		}
 		
 		// create menu items
+		this.itemNames = [];
 		this.addItems(options.itemNames, options.itemActions);
 		
 		// push item container into document
@@ -138,11 +157,60 @@ class Menu {
 			let item = this.itemContainer.children[i];
 			
 			item.textContent = newNames[i];
+			this.itemNames[i] = newNames[i];
+		}
+	}
+	
+	// create an item button from a name and action
+	createItemButton(name, action){
+		// create button
+		let itemButton = document.createElement("button");
+		
+		// bind action to this instance
+		action = (action || defaultAction).bind(this);
+		
+		// add css
+		itemButton.classList.add("menu-item");
+		
+		// override width
+		if(this.width){
+			itemButton.style.width = this.width;
+		}
+		
+		// stylize
+		itemButton.textContent = name;
+		itemButton.addEventListener("mouseup", e => {
+			action(e, ...(this.args || []));
+		});
+		
+		return itemButton;
+	}
+	
+	// insert items at a particular index, with 0 being the beginning and the length of itemNames-1 being the end
+	insertItems(index, newNames, newActions){
+		// prevent bad iterator below if newActions is undefined
+		newActions = newActions || [];
+		
+		// create menu items
+		for(let i = 0; i < newNames.length; i++){
+			// grab button
+			let itemButton = this.createItemButton(newNames[i], newActions[i]);
+			
+			// insert button before index
+			let indexNode = this.itemContainer.children[index];
+			
+			if(!indexNode){
+				console.error("Bad index for insertItems");
+				return;
+			}
+			
+			// because indexNode is moved forward each time, this will work for every new button
+			this.itemContainer.insertBefore(itemButton, indexNode);
 		}
 	}
 	
 	// add items to this menu
-	// if newActions is too short, the default action is used for the remaining names
+	// if newActions is too short or undefined, the default action is used for the remaining names
 	// if newActions is too long, extra actions are ignored
 	addItems(newNames, newActions){
 		// prevent bad iterator below if newActions is undefined
@@ -150,25 +218,14 @@ class Menu {
 		
 		// create menu items
 		for(let i = 0; i < newNames.length; i++){
-			// item name
-			let name = newNames[i];
-			let action = (newActions[i] || defaultAction).bind(this);
+			// grab button
+			let itemButton = this.createItemButton(newNames[i], newActions[i]);
 			
-			// create buttons for each item name
-			let itemButton = document.createElement("button");
-			
-			itemButton.classList.add("menu-item");
-			
-			if(this.width){
-				itemButton.style.width = this.width;
-			}
-			
-			itemButton.textContent = name;
-			itemButton.addEventListener("mouseup", e => {
-				action(e, ...(this.args || []));
-			});
-			
+			// add to end of itemContainer
 			this.itemContainer.appendChild(itemButton);
+			
+			// add to item names
+			this.itemNames.push(name);
 		}
 	}
 	

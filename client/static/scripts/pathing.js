@@ -55,40 +55,92 @@ let nodeContextMenu = new Menu({
 });
 
 // gets changed by the program as actions are loaded
-let nodeActionListMenu = new Menu({
-	itemNames: [],
-	itemActions: []
+let nodeActionListMenu = null; // leaving null for now to avoid confusion
+
+let globalVariables = {};
+
+// menu for showing global variables
+let globalListMenu = new Menu({
+	itemNames: ["(add global variable)"],
+	itemActions: [
+		// add a global variable
+		function(e){
+			// create and show the prompt
+			new Prompt({
+				killOnHide: true,
+				htmlContent: `
+				<label for="global-name-input">Name:</label>
+				<input id="global-name-input"></input><br>
+				<label for="global-type-input">Type:</label><br>
+				<input id="global-type-input"></input><br>
+				<label for="global-initial-input">Initial Value:</label>
+				<input id="global-initial-input"></input><br>
+				<button id="global-done-button">Done</button>
+				`,
+				args: [this],
+				js: function(globalListMenu){
+					// TODO: this function could probably be neatened up a little
+					
+					// grab done button
+					const doneButton = document.getElementById("global-done-button");
+					
+					// grab inputs
+					const nameInput = document.getElementById("global-name-input");
+					const typeInput = document.getElementById("global-type-input");
+					const initialInput = document.getElementById("global-initial-input");
+					
+					// write global when done is clicked
+					doneButton.addEventListener("click", e => {
+						// if not all inputs are filled out, ignore input and quit
+						if(nameInput.value.length <= 0 || typeInput.value.length <= 0){
+							this.hide();
+							return;
+						};
+						
+						// check if global variable already exists
+						if(globalVariables[nameInput.value]){
+							// alert user that it already exists and return without closing prompt
+							alert("the global " + nameInput.value + " already exists");
+							return;
+						}
+						
+						// create global variable
+						let global = {
+							name: nameInput.value,
+							type: typeInput.value,
+							initialValue: initialInput.value
+						};
+						
+						// politely ask server to create new global
+						fetch("/pleaseMakeANewGlobalVariable", {
+							method: "POST",
+							headers: new Headers({'Content-Type': 'application/json'}),
+							body: JSON.stringify(global)
+						})
+						.then(res => {
+							// add global var to client's menu list
+							globalListMenu.addItems([global.name], [
+								function(){
+									// prevent menu from being hidden when this button is clicked (primarily just to prevent user frustration)
+									this.suppressHide = true;
+								}
+							]);
+							
+							// add global var to array
+							globalVariables[global.name] = global;
+						})
+						.catch(alert); // FIXME: some better error/state reporting system than an irritating alert
+						
+						this.hide();
+					});
+				}
+			}).show(e.clientX, e.clientY);
+		}
+	],
 });
 
 
 // CLASSES
-
-// GLOBAL VARIABLE MANAGER
-/**
-	*	@brief Handles global variables for a path, although it's not necessarily specific to any particular path
-	*
-	*	Global variables are variables stored in Config.java which can be accessed and modified at any point during the auto by any node.  They can be used as parameters to node actions, modified as a node action, or used within a node action in code.
-	*	
-	*	The basic idea behind global variables is to store and access unknown values, such as sensor inputs, between different nodes and node actions (which would save the programmer from having to create a unique node action and global variable within their custom action index in order to do so).
-	*
-	*	Creating and managing global variables:
-	*	- Global variables will only be available in the GUI if created within the GUI.
-	*	- Any global variable created in the GUI will be added to Config.java in the public scope.  This is to make it accessible to all action indexes.  There is no encapsulation, the variable can just be accessed directly.  This is because I can't be bothered to program get/set method generation for each variable when there's absolutely no point to data encapsulation given the context of this project.
-	*	- If a global variable is already defined within another action index when one is created with the GUI, there will probably be a problem, but this is subject to change in the future.
-	*
-	*	@todo Have any parsed action indexes also keep track of any attributes which they define and check for naming conflicts whenever global variables are created.
-*/
-class GlobalVariableManager {
-	
-	
-	/**
-		*	
-	*/
-	constructor(){
-		
-	}
-};
-
 
 // BOT CLASS
 class Bot {
@@ -389,6 +441,7 @@ class Path {
 
 // fetch available actions from server
 // TODO: messy, fix up a bit
+// TODO: also make this function async
 function fetchActionsSync(){
 	let request = new XMLHttpRequest();
 	request.open('GET', '/validActions', false); // `false` makes the request synchronous
@@ -403,6 +456,8 @@ function fetchActionsSync(){
 		
 		let itemActions = [];
 		
+		// create actions for each node action, specifically to add that node action to a node
+		// TODO: fix some of the headache inducing variable names in this bloated function
 		for(let a of loadedActions){
 			formattedActionNames.push(a.name + " (" + a.params.length + " params)");
 			let closeButtonName = "close-button-" + a.name + "-" + a.params.length + "-parameter-prompt";
@@ -413,9 +468,7 @@ function fetchActionsSync(){
 					new Prompt({
 						// one time prompt, delete when hidden
 						// this is just in case the user cancels the prompt, which would leave the html in the page
-						onHide: function(){
-							this.kill();
-						},
+						killOnHide: true,
 						args: [a, n],
 						htmlContent: "<button id=\"" + closeButtonName + "\">Done</button>", // rest is created dynamically by js
 						js: function(a, n){
@@ -430,14 +483,36 @@ function fetchActionsSync(){
 							closeButton.addEventListener("click", e => {
 								let paramString = "(";
 								
-								for(let i = 0; i < a.params.length; i++){
-									let param = a.params[i];
-									
+								for(let param of a.params){
 									let input = document.getElementById(param.name + idText);
 									
-									completedParams[param.name] = input.value;
+									let value = input.value;
 									
-									paramString += param.name + "=" + input.value + ", ";
+									// validate input
+									// FIXME: should validate input a bit more thoroughly
+									
+									// check for blank values
+									if(value.length <= 0){
+										// close prompt without continuing
+										this.hide();
+										return;
+									}
+									
+									// check for globals
+									if(globalListMenu.itemNames.includes(value)){
+										// if global type doesn't match, alert user and don't close prompt
+										let global = globalVariables[value];
+										
+										if(param.type != global.type){
+											alert(global.name + " can't be used for " + param.name + " because the types don't match");
+											return;
+										}
+									}
+									
+									// add to completed params
+									completedParams[param.name] = value;
+									
+									paramString += param.name + "=" + value + ", ";
 								}
 								
 								// remove that pesky comma
@@ -449,7 +524,7 @@ function fetchActionsSync(){
 								n.nodeActions.push([a.name, completedParams]);
 								n.nodeActionMenu.addItems([a.name + " " + paramString]);
 								
-								this.kill();
+								this.hide();
 							});
 		
 							// for each parameter, create a label and an input box
@@ -460,78 +535,13 @@ function fetchActionsSync(){
 								let input = document.createElement("input");
 								let br = document.createElement("br");
 								
-								// control input based on parameter type
-								// first switch: input type switch
-								// TODO: array/object support?
-								switch(param.type){
-									case "byte":
-									case "short":
-									case "int":
-									case "long":
-									case "boolean":
-										// can't store floating point values
-										// type is also a number
-										input.type = "number";
-										input.oninput=function(){
-											// TODO: make this better	
-											let has = this.value.match(/\..*/g);
-											
-											if(has){
-												// NOTE: for some reason, .replace properly detects the decimal as it's typed, but .match doesn't...
-												this.value = this.value.replace(/\..*/g, "");
-											
-												// unfocus to prevent the cursor from going wonky
-											
-												this.blur();
-											}
-										}
-										break;
-									case "float":
-									case "double":
-										// type is a number
-										input.type = "number";
-										break;
-									// otherwise default to text
-									default:
-										input.type = "text";
-										break;
-								}
-								
-								// special case stuff, mainly limits
-								// TODO: limits don't work ATM, ignoring for now bc it doesn't really matter but it should be fixed eventually
-								switch(param.type){
-									case "byte":
-										input.min = "-128";
-										input.max = "127";
-										break;
-									case "short":
-										input.min = "-32768";
-										input.max = "32767";
-										break;
-									case "int":
-										input.min = "-2147483648";
-										input.max = "2147483647";
-										break;
-									case "long":
-										input.min = "-9223372036854775808"
-										input.max = "9223372036854775807";
-										break;
-									case "boolean":
-										input.min = "0";
-										input.max = "1";
-										break;
-									case "char":
-										input.maxLength = "1";
-										break;
-								}
-								
 								let id = param.name + idText;
 								
 								input.id = id;
 								label.for = id;
-								label.textContent = param.name + ":";
+								label.textContent = param.name + " (" + param.type + ") :";
 								
-								// TODO: creating "br" each time is probably slow somehow
+								// TODO: creating "br" each time is probably bad somehow.  I'm not sure how, but I can feel it
 								this.itemContainer.insertBefore(br, closeButton);
 								this.itemContainer.insertBefore(input, br);
 								this.itemContainer.insertBefore(label, input);
@@ -544,7 +554,9 @@ function fetchActionsSync(){
 		
 		nodeActionListMenu = new Menu({
 			// function names tend to be longer, so override default width
-			width: "250px",
+			width: "300px",
+			// these can get long, so add a height
+			height: "250px",
 			itemNames: formattedActionNames,
 			itemActions: itemActions
 		});

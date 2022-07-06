@@ -21,6 +21,11 @@ const clientDir = "./client/";
 const clientRootDir = path.join(__dirname, clientDir);
 const staticDir = path.join(clientRootDir, "static");
 
+// express application
+const app = express();
+
+// NON STATIC GLOBAL VARS
+
 // java dirs //
 // directory for java source output
 let javaOutDir = "./java/out/";
@@ -32,14 +37,25 @@ let javaActionIndexDir = "./java/actions/";
 // directory for parts
 let partFileDir = "./parts/";
 
-// express application
-const app = express();
-
-// NON STATIC GLOBAL VARS
-
 // all loaded action indexes
 let actionIndexes = [];
 let availableMethods = [];
+
+/**
+	*	@brief Handles global variables for a path, although it's not necessarily specific to any particular path
+	*
+	*	Global variables are variables stored in Config.java which can be accessed and modified at any point during the auto by any node.  They can be used as parameters to node actions, modified as a node action, or used within a node action in code.
+	*	
+	*	The basic idea behind global variables is to store and access unknown values, such as sensor inputs, between different nodes and node actions (which would save the programmer from having to create a unique node action and global variable within their custom action index in order to do so).
+	*
+	*	Creating and managing global variables:
+	*	- Global variables will only be available in the GUI if created within the GUI.
+	*	- Any global variable created in the GUI will be added to Config.java in the public scope.  This is to make it accessible to all action indexes.  There is no encapsulation, the variable can just be accessed directly.  This is because I can't be bothered to program get/set method generation for each variable when there's absolutely no point to data encapsulation given the context of this project.
+	*	- If a global variable is already defined within another action index when one is created with the GUI, there will probably be a problem, but this is subject to change in the future.
+	*
+	*	@todo Have any parsed action indexes also keep track of any attributes which they define and check for naming conflicts whenever global variables are created.
+*/
+let globalVariableManager = [];
 
 // PATH TO JAVA SETUP
 
@@ -77,11 +93,15 @@ app.get("/validActions", (req, res) => {
 	res.send(JSON.stringify(availableMethods)).end();
 });
 
+app.get("/globalVariables", (req, res) => {
+	res.send("FIXME: send something").end();
+});
+
 app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
-	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, teamName);
+	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, globalVariableManager, teamName);
 	
 	// send back the folder the source is being exported into
 	res.send(javaOutDir).end();
@@ -101,6 +121,13 @@ app.post("/newPartFile", (req, res) => {
 	
 	// let the client know that it's taken care of
 	res.send("Done").end();
+});
+
+// create a new global variable
+app.post("/pleaseMakeANewGlobalVariable", (req, res) => {
+	globalVariableManager.push(req.body);
+	
+	res.send("ok, no problem").end();
 });
 
 // start listening

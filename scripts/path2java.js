@@ -16,14 +16,44 @@ const TABBING = ["", "\t", "\t\t", "\t\t\t", "\t\t\t\t"];
 // default movement action used to move between nodes
 const defaultMovementAction = "goTo";
 
+// format global variables into a string of class properties
+function formatGlobalVars(globalVars){
+	// global var string (output of function)
+	let globalString = "";
+	
+	// loop through each global variables
+	for(let globalVar of globalVars){
+		// definition line of this variable
+		// NOTE: all definitions are public so that they are accessible by all action indexes
+		let definition = "\n\tpublic " + globalVar.type + " " + globalVar.name;
+		
+		// add initial value, if it has one
+		if(globalVar.initialValue.length > 0){
+			definition += " = " + globalVar.initialValue;
+		}
+		
+		// semicolon + newline
+		definition += ";";
+		
+		// add definition to globalString
+		globalString += definition;
+	}
+	
+	return globalString;
+}
+
 // converts a node path into java
 // the nodepath provided is what will be converted
 // it will write all necessary files into the path provided by outpath
 // the name of the auto itself will be the parameter name
 // actionIndexes is all actionIndexes in use by the auto
 // configTemplate is the template where config info is currently stored
+// globalVars is an array of global variables to include in the path
 // teamName is the name of the team to use in copyright statements
-function path2java(nodepath, outpath, name, actionIndexes, configTemplate, teamName){
+function path2java(nodepath, outpath, name, actionIndexes, configTemplate, globalVars, teamName){
+	// clear outpath entirely before progressing
+	fs.rmSync(outpath, {force: true, recursive: true});
+	
 	// compile action indexes
 	// TODO: sort action indexes
 	
@@ -84,6 +114,11 @@ function path2java(nodepath, outpath, name, actionIndexes, configTemplate, teamN
 	
 	// for now, the last action index in the list is the one that the auto inherits
 	autoTemplate.replaceTag("actionIndex", actionIndexes[actionIndexes.length-1].classname);
+	
+	// add global vars to config
+	let globalVarString = formatGlobalVars(globalVars);
+	
+	configTemplate.replaceTag("globalVars", globalVarString);
 	
 	// INITONCE
 	let tab = 2; // number of tabs to indent each line, changes depending on block

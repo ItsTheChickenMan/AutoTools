@@ -79,7 +79,6 @@ let m = new Menubar("menu-bar", {
 			itemNames: ["Add Action Index", "Add Part File", "See Global Variables"],
 			itemActions: [
 				function(mouseEvent){
-					console.log(mouseEvent);
 					// prompt user (TODO: decide on standards between making a permanent prompt and using parameters vs. making a temporary prompt?)
 					let actionIndexPrompt = new Prompt({
 						// delete when hidden
@@ -162,7 +161,10 @@ let m = new Menubar("menu-bar", {
 					partFilePrompt.show(mouseEvent.clientX, mouseEvent.clientY);
 				},
 				function(mouseEvent){
-					
+					// TODO: make show() automatically call suppressHide?  only not doing now bc I'm not sure what the consequences of doing so would be
+					// I'm just assuming right now that I MUST'VE had a good reason to create suppressHide but I really don't know what it was
+					globalListMenu.suppressHide = true;
+					globalListMenu.show(mouseEvent.clientX, mouseEvent.clientY);
 				}
 			]
 		},
