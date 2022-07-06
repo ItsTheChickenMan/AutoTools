@@ -49,6 +49,7 @@ class Template {
     let currentTag = "";
     let currentStart = 0;
     let currentEnd = 0;
+		let data = ""; // default data, if defined
     let parsing = false;
 
     // loop through each byte
@@ -67,14 +68,18 @@ class Template {
             tag: currentTag,
             start: currentStart,
             end: currentEnd,
-            data: "",
+            data: data,
 						enclosures: currentByte == ")" ? ["(", ")"] : ["[", "]"]
           };
-
+					
           parsing = false;
-        } else if(currentByte != '\\' && ( (currentByte != '(' && currentByte != '[') || ( (currentByte == '(' || currentByte == '[') && lastByte == '\\') ) ){
+        } else if(data.length == 0 && currentByte != ',' && currentByte != '\\' && ( (currentByte != '(' && currentByte != '[') || ( (currentByte == '(' || currentByte == '[') && lastByte == '\\') ) ){
           currentTag += currentByte;
-        }
+        } else if(data.length > 0 || currentByte == ','){ // start collecting data for default
+					if(data.length == 0) i++; // skip comma and start data collection
+					
+					data += this.data[i];
+				}
       } else if(currentByte == '$' && lastByte != '\\'){
         currentStart = i;
         currentTag = "";

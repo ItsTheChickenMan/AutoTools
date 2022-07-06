@@ -28,9 +28,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 package org.firstinspires.ftc.teamcode.actions;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 // NOTE: be sure to use bracket notation for templates in the superclass template block
 public class MecanumDefaultActionIndex extends $[superclass] {
+	// global vars
+	
+	$(globals,
+	public double motorTpr = 0; // no default
+	
+	public DcMotor.Direction frontLeftDirection 	= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction frontRightDirection 	= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction backLeftDirection 		= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction backRightDirection 	= 	DcMotor.Direction.FORWARD;
+	)
+	
   /**
     * @brief Global timer for timing actions
   */

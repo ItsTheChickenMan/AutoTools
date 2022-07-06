@@ -17,6 +17,7 @@ const TABBING = ["", "\t", "\t\t", "\t\t\t", "\t\t\t\t"];
 const defaultMovementAction = "goTo";
 
 // format global variables into a string of class properties
+// NOTE: currently shouldn't be used
 function formatGlobalVars(globalVars){
 	// global var string (output of function)
 	let globalString = "";
@@ -28,8 +29,8 @@ function formatGlobalVars(globalVars){
 		let definition = "\n\tpublic " + globalVar.type + " " + globalVar.name;
 		
 		// add initial value, if it has one
-		if(globalVar.initialValue.length > 0){
-			definition += " = " + globalVar.initialValue;
+		if(globalVar.value.length > 0){
+			definition += " = " + globalVar.value;
 		}
 		
 		// semicolon + newline
@@ -114,11 +115,6 @@ function path2java(nodepath, outpath, name, actionIndexes, configTemplate, globa
 	
 	// for now, the last action index in the list is the one that the auto inherits
 	autoTemplate.replaceTag("actionIndex", actionIndexes[actionIndexes.length-1].classname);
-	
-	// add global vars to config
-	let globalVarString = formatGlobalVars(globalVars);
-	
-	configTemplate.replaceTag("globalVars", globalVarString);
 	
 	// INITONCE
 	let tab = 2; // number of tabs to indent each line, changes depending on block

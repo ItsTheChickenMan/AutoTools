@@ -13,7 +13,9 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 
 ### Low Priority:
 
+- New alert system other than just using alert() (because html alerts are fairly irritating)
 - Compile and deploy autonomous to control hub automatically when exported
+- Decide on a standard for global variables (the current doesn't allow the user to create globals outside of action indexes)
 
 ### Do For Fun:
 
@@ -22,3 +24,4 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 - Make README a bit more descriptive and helpful
 - Workaround for bad javascript floats (large amounts of trailing decimals like 108.86399999999999)
 - Fix documentation (flips too often between verbose javadoc style and quick dev comments)
+- Got through all TODOs and FIXMEs

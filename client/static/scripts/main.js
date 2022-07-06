@@ -236,8 +236,6 @@ function draw(){
 	// mouse update
 	updateMouseClicked();
 	
-	
-	
 	// render //
 	
 	// draw background

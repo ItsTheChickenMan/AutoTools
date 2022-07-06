@@ -76,6 +76,7 @@ function initClickables(canvas){
 		e.preventDefault();
 		
 		// search for clickable which contains mouse coordinates
+		// TODO: fix misaligned menus from clickables using the p5js coordinates (which are slight off from the actual mouse coordinates)
 		let x = mouseX;
 		let y = mouseY;
 		

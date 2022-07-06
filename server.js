@@ -46,12 +46,13 @@ let availableMethods = [];
 	*
 	*	Global variables are variables stored in Config.java which can be accessed and modified at any point during the auto by any node.  They can be used as parameters to node actions, modified as a node action, or used within a node action in code.
 	*	
-	*	The basic idea behind global variables is to store and access unknown values, such as sensor inputs, between different nodes and node actions (which would save the programmer from having to create a unique node action and global variable within their custom action index in order to do so).
-	*
+	*	The global variable interface is mainly to manage global variables already defined in an action index for use within that action index as a "set and forget" value (mainly just settings)
+	*	
 	*	Creating and managing global variables:
-	*	- Global variables will only be available in the GUI if created within the GUI.
-	*	- Any global variable created in the GUI will be added to Config.java in the public scope.  This is to make it accessible to all action indexes.  There is no encapsulation, the variable can just be accessed directly.  This is because I can't be bothered to program get/set method generation for each variable when there's absolutely no point to data encapsulation given the context of this project.
-	*	- If a global variable is already defined within another action index when one is created with the GUI, there will probably be a problem, but this is subject to change in the future.
+	*	- Global variables can only be created in action indexes, as properties of the class in the public scope.
+	*	- Global variables will be loaded any time an action index is loaded
+	*	-	The value of global variables can be changed within the GUI but not during the autonomous itself(?)
+	*	-	The global variable can be used for any parameter of an action index
 	*
 	*	@todo Have any parsed action indexes also keep track of any attributes which they define and check for naming conflicts whenever global variables are created.
 */
@@ -90,11 +91,13 @@ app.get("/", (req, res) => {
 
 // return a list of all current available actions from ActionIndexs
 app.get("/validActions", (req, res) => {
+	// send available methods to user...that's it
 	res.send(JSON.stringify(availableMethods)).end();
 });
 
 app.get("/globalVariables", (req, res) => {
-	res.send("FIXME: send something").end();
+	// reformat them into a straight array
+	res.send(JSON.stringify(globalVariableManager)).end();
 });
 
 app.use(express.json());
@@ -124,6 +127,8 @@ app.post("/newPartFile", (req, res) => {
 });
 
 // create a new global variable
+// FIXME: delete or repurpose this
+// NOTE: i'm changing the global variable system, so this isn't important anymore, don't use it
 app.post("/pleaseMakeANewGlobalVariable", (req, res) => {
 	globalVariableManager.push(req.body);
 	
@@ -143,7 +148,7 @@ function loadActionIndex(path){
 	let file = fs.readFileSync(path).toString();
 	
 	// get all methods
-	let methods = javautils.getJavaMethods(file, ["public"]); // ignore protected or private methods
+	let methods = javautils.getClassMethods(file, ["protected", "private"]); // ignore protected or private methods
 	
 	let cni = javautils.getClassNameAndInheritance(file);
 	
@@ -157,4 +162,9 @@ function loadActionIndex(path){
 	// push to action indexes
 	actionIndexes.push(index);
 	availableMethods.push(...methods);
+	
+	// load global variables
+	let variables = javautils.getClassProperties(file, ["protected", "private"]); // ignore protected or private methods
+	
+	globalVariableManager.push({file: path, variables: variables});
 }

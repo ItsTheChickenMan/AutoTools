@@ -46,13 +46,10 @@ public class Config extends LinearOpMode {
 	// predefined:
 	
 	// bot location
-	private double xPosition;
-	private double yPosition;
+	public double xPosition;
+	public double yPosition;
 	
-	
-	// user defined:
-	$(globalVars)
-	
+	// methods
 	
 	public void setPosition(double x, double y){
 		this.xPosition = x;

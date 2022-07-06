@@ -152,12 +152,52 @@ class Menu {
 	// change item names without changing item actions.  better than reconstructing the menu each time you want to change the names
 	// if newNames is too short, it won't change the remaining names.  if newNames is too long, it will ignore the extra names provided
 	changeItemNames(newNames){
-		// loop through each item
+		// loop by whichever is the smallest number (to avoid overwrites)
 		for(let i = 0; i < Math.min(this.itemContainer.children.length, newNames.length); i++){
 			let item = this.itemContainer.children[i];
 			
 			item.textContent = newNames[i];
 			this.itemNames[i] = newNames[i];
+		}
+	}
+	
+	// override item names and item actions.
+	// similar to changeItemNames but also changes actions
+	// if destructive is false/undefined, then the behavior is:
+	// if newNames is too short, it won't change the remaining names.  if newNames is too long, it will ignore the extra names provided
+	// if destructive is true, then the behavior is:
+	// if newNames is too short, delete any remaining items.  if newNames is too long, expand the amount of items
+	// TODO: this function needs some cleaning
+	changeItems(newNames, newActions, destructive){
+		// prevent bad iterator below if newActions is undefined
+		newActions = newActions || [];
+		
+		let length = destructive ? newNames.length : Math.min(this.itemContainer.children.length, newNames.length);
+		
+		// create menu items
+		for(let i = 0; i < length; i++){
+			// create button
+			let itemButton = this.createItemButton(newNames[i], newActions[i]);
+			
+			// grab old item and replace, if it exists
+			// otherwise append the item and name
+			if(i < this.itemContainer.children.length){
+				let item = this.itemContainer.children[i];
+				
+				this.itemContainer.replaceChild(itemButton, item);
+				
+				// replace item name
+				this.itemNames[i] = newNames[i];
+			} else {
+				this.itemContainer.appendChild(itemButton);
+				
+				this.itemNames.push(newNames[i]);
+			}
+		}
+		
+		// if there's any items left that we don't want, get rid of them
+		while(newNames.length < this.itemContainer.children.length){
+			this.itemContainer.removeChild(this.itemContainer.children[newNames.length]);
 		}
 	}
 	

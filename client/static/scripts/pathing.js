@@ -12,9 +12,11 @@ let loadedActions = []; // actions in full table form
 let nodeContextMenu = new Menu({
 	itemNames: ["Log to Console (Dev)", "See Node Actions", "Insert Node Before", "Insert Node After", "Change Node Position", "Delete Node"],
 	itemActions: [
-		function(e, n){ // add node action
+		// log node to console for debugging information
+		function(e, n){
 			console.log(n);
 		},
+		// show all node actions
 		function(e, n){
 			// temporary fix for nodeActionMenu not showing up
 			n.nodeActionMenu.suppressHide = true;
@@ -57,14 +59,17 @@ let nodeContextMenu = new Menu({
 // gets changed by the program as actions are loaded
 let nodeActionListMenu = null; // leaving null for now to avoid confusion
 
-let globalVariables = {};
+let globalVariables = [];
 
 // menu for showing global variables
+let defaultGlobalListString = "(none)";
+
 let globalListMenu = new Menu({
-	itemNames: ["(add global variable)"],
+	itemNames: [defaultGlobalListString],
 	itemActions: [
 		// add a global variable
-		function(e){
+		/*
+		function(e){	
 			// create and show the prompt
 			new Prompt({
 				killOnHide: true,
@@ -108,7 +113,7 @@ let globalListMenu = new Menu({
 						let global = {
 							name: nameInput.value,
 							type: typeInput.value,
-							initialValue: initialInput.value
+							value: initialInput.value
 						};
 						
 						// politely ask server to create new global
@@ -136,6 +141,7 @@ let globalListMenu = new Menu({
 				}
 			}).show(e.clientX, e.clientY);
 		}
+		*/
 	],
 });
 
@@ -413,8 +419,6 @@ class Path {
 		
 		payload.name = name;
 		
-		console.log(payload);
-		
 		payload = JSON.stringify(payload);
 		
 		fetch(window.location.origin + this.PATH_EXPORT_URL, {
@@ -439,7 +443,7 @@ class Path {
 
 // UTILS
 
-// fetch available actions from server
+// fetch available actions from server (also does global variables)
 // TODO: messy, fix up a bit
 // TODO: also make this function async
 function fetchActionsSync(){
@@ -499,7 +503,8 @@ function fetchActionsSync(){
 									}
 									
 									// check for globals
-									if(globalListMenu.itemNames.includes(value)){
+									// FIXME: adapt to new system
+									/*if(globalListMenu.itemNames.includes(value)){
 										// if global type doesn't match, alert user and don't close prompt
 										let global = globalVariables[value];
 										
@@ -507,7 +512,7 @@ function fetchActionsSync(){
 											alert(global.name + " can't be used for " + param.name + " because the types don't match");
 											return;
 										}
-									}
+									}*/
 									
 									// add to completed params
 									completedParams[param.name] = value;
@@ -560,5 +565,71 @@ function fetchActionsSync(){
 			itemNames: formattedActionNames,
 			itemActions: itemActions
 		});
+		
+		// fetch global variables (async)
+		fetchVariables();
 	}
+}
+
+// fetch available variables from server
+async function fetchVariables(){
+	// get variables string
+	let res = await fetch("/globalVariables");
+	
+	// convert to json
+	let json = await res.json();
+	
+	// create new names/new actions
+	let itemNames = [];
+	let itemActions = [];
+	
+	console.log(json);
+	
+	for(let variable of json){
+		// add to globalVariables
+		globalVariables.push(variable);
+		
+		// add item name
+		itemNames.push(variable.name);
+		
+		// create item action
+		let action = mouseEvent => {
+			// prompt user to modify the value of this global
+			new Prompt({
+				killOnHide: true,
+				htmlContent: `
+				<p style="display: inline;">${variable.name}:</p><br>
+				<label for="global-variable-input">Value: </label>
+				<input id="global-variable-input" value="${variable.value}"></input><br>
+				<button id="global-done-button">Done</button>
+				`,
+				args: [variable],
+				js: function(variable){
+					// grab elements
+					const doneButton = document.getElementById("global-done-button");
+					const variableInput = document.getElementById("global-variable-input");
+					
+					// done button clicked
+					doneButton.addEventListener("click", e => {
+						// save if input has value
+						if(variableInput.value.length > 0){
+							// TODO: validate input
+							variable.value = variableInput.value;
+						}
+						
+						// hide
+						this.hide();
+					});
+				}
+			}).show(mouseEvent.clientX, mouseEvent.clientY);
+		}
+	
+		// push action
+		itemActions.push(action);
+	}
+	
+	// overwrite the current global variables
+	// this gets rid of the default, and doesn't cause any problems since the server should send us a complete list every time
+	// the only real issue is that it's somewhat inefficient and would become a big problem if a lot of global variables were to be involved
+	globalListMenu.changeItems(itemNames, itemActions, true); // destructive replacement
 }
