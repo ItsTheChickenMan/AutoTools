@@ -49,9 +49,9 @@ function formatGlobalVars(globalVars){
 // the name of the auto itself will be the parameter name
 // actionIndexes is all actionIndexes in use by the auto
 // configTemplate is the template where config info is currently stored
-// globalVars is an array of global variables to include in the path
+// globalVariableManager is the global variable manager; a table indexed by file paths
 // teamName is the name of the team to use in copyright statements
-function path2java(nodepath, outpath, name, actionIndexes, configTemplate, globalVars, teamName){
+function path2java(nodepath, outpath, name, actionIndexes, configTemplate, globalVariableManager, teamName){
 	// clear outpath entirely before progressing
 	fs.rmSync(outpath, {force: true, recursive: true});
 	
@@ -78,25 +78,30 @@ function path2java(nodepath, outpath, name, actionIndexes, configTemplate, globa
 			return;
 		});
 		
-		// loop through each index replacing $(superclass) with the appropriate superclass and writing to outpath
+		// loop through each index replacing the superclass template block with the appropriate superclass and writing to outpath
 		for(let i = 0; i < actionIndexes.length; i++){
 			let a = actionIndexes[i];
 			
-			// if action index has a blank superclass $(superclass), load it into a template and make superclass the previous action indexs
-			if(a.superclassname == "$(superclass)" || a.superclassname == "$[superclass]"){
-				let actionIndexTemplate = new Template(a.path);
-				let superIndexString = i == 0 ? "Config" : actionIndexes[i-1].classname;
-				
-				actionIndexTemplate.replaceTag("superclass", superIndexString);
-				
-				// write actionIndex to outpath
-				let actionIndexString = actionIndexTemplate.writeOutput("");
-				
-				fs.writeFile(actionsIndexOutpath + a.classname + ".java", actionIndexString, err => {
-					if(err) console.error("Couldn't create actionIndex " + a.name);
-					return;
-				});
-			}
+			// load action index into a template
+			let actionIndexTemplate = new Template(a.path);
+			let superIndexString = i == 0 ? "Config" : actionIndexes[i-1].classname;
+			
+			// add superclass 
+			if(a.superclassname.includes("superclass")) actionIndexTemplate.replaceTag("superclass", superIndexString);
+			
+			// add globals
+			let globals = globalVariableManager[a.path];
+			let globalString = formatGlobalVars(globals);
+			
+			actionIndexTemplate.replaceTag("globals", globalString);
+			
+			// write actionIndex to outpath
+			let actionIndexString = actionIndexTemplate.writeOutput("");
+			
+			fs.writeFile(actionsIndexOutpath + a.classname + ".java", actionIndexString, err => {
+				if(err) console.error("Couldn't create actionIndex " + a.name);
+				return;
+			});
 		}
 	});
 	

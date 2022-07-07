@@ -59,7 +59,7 @@ let nodeContextMenu = new Menu({
 // gets changed by the program as actions are loaded
 let nodeActionListMenu = null; // leaving null for now to avoid confusion
 
-let globalVariables = [];
+let globalVariables = {};
 
 // menu for showing global variables
 let defaultGlobalListString = "(none)";
@@ -404,7 +404,8 @@ class Path {
 	createServerPayload(name){
 		let payload = {
 			name: name,
-			nodes: []
+			nodes: [],
+			variables: globalVariables
 		};
 		
 		for(let i = 0; i < this.nodes.length; i++){
@@ -583,49 +584,54 @@ async function fetchVariables(){
 	let itemNames = [];
 	let itemActions = [];
 	
-	console.log(json);
+	// clear global variables
 	
-	for(let variable of json){
-		// add to globalVariables
-		globalVariables.push(variable);
+	for(let path in json){
+		let variables = json[path];
 		
-		// add item name
-		itemNames.push(variable.name);
-		
-		// create item action
-		let action = mouseEvent => {
-			// prompt user to modify the value of this global
-			new Prompt({
-				killOnHide: true,
-				htmlContent: `
-				<p style="display: inline;">${variable.name}:</p><br>
-				<label for="global-variable-input">Value: </label>
-				<input id="global-variable-input" value="${variable.value}"></input><br>
-				<button id="global-done-button">Done</button>
-				`,
-				args: [variable],
-				js: function(variable){
-					// grab elements
-					const doneButton = document.getElementById("global-done-button");
-					const variableInput = document.getElementById("global-variable-input");
-					
-					// done button clicked
-					doneButton.addEventListener("click", e => {
-						// save if input has value
-						if(variableInput.value.length > 0){
-							// TODO: validate input
-							variable.value = variableInput.value;
-						}
+		for(let variable of variables){
+			// add item name
+			itemNames.push(variable.name);
+			
+			// create item action
+			let action = mouseEvent => {
+				// prompt user to modify the value of this global
+				new Prompt({
+					killOnHide: true,
+					htmlContent: `
+					<p style="display: inline;">${variable.name}:</p><br>
+					<label for="global-variable-input">Value: </label>
+					<input id="global-variable-input"></input><br>
+					<button id="global-done-button">Done</button>
+					`,
+					args: [variable],
+					js: function(variable){
+						// grab elements
+						const doneButton = document.getElementById("global-done-button");
+						const variableInput = document.getElementById("global-variable-input");
 						
-						// hide
-						this.hide();
-					});
-				}
-			}).show(mouseEvent.clientX, mouseEvent.clientY);
+						variableInput.value = variable.value;
+						
+						// done button clicked
+						doneButton.addEventListener("click", e => {
+							// save if input has value
+							if(variableInput.value.length > 0){
+								// TODO: validate input
+								variable.value = variableInput.value;
+							}
+							
+							// hide
+							this.hide();
+						});
+					}
+				}).show(mouseEvent.clientX, mouseEvent.clientY);
+			}
+		
+			// push action
+			itemActions.push(action);
 		}
 	
-		// push action
-		itemActions.push(action);
+		globalVariables[path] = variables;
 	}
 	
 	// overwrite the current global variables

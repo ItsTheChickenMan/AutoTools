@@ -43,8 +43,9 @@ class Template {
 	}
 	
   /**
-   * @brief Parses this.data into tags
-   */
+		* @brief Parses this.data into tags
+  */
+	// FIXME: rewrite this entire method using RegEx, I have no idea why it's this bad
   parseDataIntoTags(){
     let currentTag = "";
     let currentStart = 0;
@@ -55,7 +56,7 @@ class Template {
     // loop through each byte
     for(let i = 0; i < this.data.length; i++){
       let currentByte = this.data[i];
-      let lastByte = this.data[i-1 < 0 ? 0 : i-1];
+      let lastByte = this.data[Math.max(0, i-1)];
 
       // parse tag
       if(parsing){
@@ -69,6 +70,7 @@ class Template {
             start: currentStart,
             end: currentEnd,
             data: data,
+						original: this.data.substring(currentStart, currentEnd+1),
 						enclosures: currentByte == ")" ? ["(", ")"] : ["[", "]"]
           };
 					
@@ -138,7 +140,7 @@ class Template {
 			tag.tag = tag.tag.replace(/\[/g, "\\[");
 			tag.tag = tag.tag.replace(/\]/g, "\\]");
 			
-      datacopy = datacopy.replace("$" + tag.enclosures[0] + tag.tag + tag.enclosures[1], tag.data);
+      datacopy = datacopy.replace(tag.original, tag.data);
     }
 
     datacopy += eofString || "";

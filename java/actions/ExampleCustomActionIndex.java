@@ -7,9 +7,19 @@ package org.firstinspires.ftc.teamcode.actions;
 
 // NOTE: be sure to use bracket notation for templates in the superclass template block so that the javautils parser doesn't think the class is a method
 public class ExampleCustomActionIndex extends $[superclass] { // use the superclass block to allow the program to handle what the action index inherits from (either Config or a previous action index)
-	// any attributes can be included but will be inaccessible to the user (currently.  this is subject to change)
-	private double exampleDouble = 5.0;
+	// any attributes can be included, and will be exposted to the user if they are public (under Path->See Global Variables in the GUI)
+	// any public attributes meant to be exposed to the user (so, all public attributes) should be wrapped by a globals template block, as shown below:
 	
+	// these will be exposed to the user
+	$(globals, // don't forget the comma
+	public String exampleGlobalVariable = "This is an example of a global variable which will be exposed to the user"; // the value will also be exposed and can be modified
+	public int anotherExampleGlobalVariable; // a default value is not required
+	)
+	
+	// these will not be exposed to the user
+	protected String unexposedName;
+	
+	private double exampleDouble = 5.0;
 	private boolean isDoingSomething = false;
 	
 	/**

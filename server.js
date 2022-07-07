@@ -56,7 +56,7 @@ let availableMethods = [];
 	*
 	*	@todo Have any parsed action indexes also keep track of any attributes which they define and check for naming conflicts whenever global variables are created.
 */
-let globalVariableManager = [];
+let globalVariableManager = {};
 
 // PATH TO JAVA SETUP
 
@@ -96,7 +96,9 @@ app.get("/validActions", (req, res) => {
 });
 
 app.get("/globalVariables", (req, res) => {
-	// reformat them into a straight array
+	console.log(globalVariableManager);
+	
+	// send the globalVariableManager
 	res.send(JSON.stringify(globalVariableManager)).end();
 });
 
@@ -104,6 +106,9 @@ app.use(express.json());
 
 // post requests to export with the node path as the data will parse the path into a .java opmode and save it to the main directory 
 app.post("/export", (req, res) => {
+	// update global variables
+	globalVariableManager = req.body.variables;
+	
 	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, globalVariableManager, teamName);
 	
 	// send back the folder the source is being exported into
@@ -142,6 +147,11 @@ app.listen(port, function(){
 
 // UTILS
 
+// update the values of global variables
+function updateGlobalVariables(globalVariables){
+	
+}
+
 // load an action index from path 
 function loadActionIndex(path){
 	// load file
@@ -166,5 +176,5 @@ function loadActionIndex(path){
 	// load global variables
 	let variables = javautils.getClassProperties(file, ["protected", "private"]); // ignore protected or private methods
 	
-	globalVariableManager.push({file: path, variables: variables});
+	globalVariableManager[path] = variables;
 }

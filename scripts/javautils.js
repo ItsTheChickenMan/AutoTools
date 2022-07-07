@@ -1,4 +1,14 @@
-// TODO: this entire file isn't tabbed correctly (tabbed with spaces) because it's from repl.  thanks repl!
+// TODO: most of this file isn't tabbed correctly (tabbed with spaces) because some of it is from repl.  thanks repl!
+
+/**
+	*	@brief Returns true if type is a primitive type, otherwise returns false
+	*
+	*	@param type the type to check
+	*	@return true if it is primitive, false otherwise
+*/
+function isTypePrimitive(type){
+	return ["bool", "char", "byte", "int", "short", "long", "float", "double"].includes(type);
+}
 
 /**
 	* @brief Return the class name and class name of class it's inheriting of a class in a java file
@@ -67,17 +77,29 @@ function getClassProperties(file, excludedScopes){
 			 : matches a space (which should be between the terms)
 			;: matches the finishing semicolon (so it doesn't become part of the value)
 		*/
-		let terms = propertyString.split(/\s*=\s*| |;/g); // should give something like ["scope", "type", "name", "value", ""] or ["scope", "type", "name", ""] if there's no value
+		let terms = propertyString.split(/\s*=\s*| |;/g); // should give something like ["scope", "type", "name", "value", "moreOfValue", ""] (value is split by spaces, but that's only noticeable in strings) or ["scope", "type", "name", ""] if there's no value
 		
 		// ignore if the scope isn't included
 		if(excludedScopes.includes(terms[0])) continue;
+		
+		// if the type is not a primitive type, specifically extract the value from regex (to avoid it being split by the spaces)
+		let value = terms[3];
+		
+		if(!isTypePrimitive(terms[1])){
+			// grab each equals sign and semicolon
+			let equalsMatch = Array.from(propertyString.matchAll(/=\s*/gd)).shift(); // using shift to grab the first (to avoid equals signs in the string/thing causing problems)
+			let semicolonMatch = Array.from(propertyString.matchAll(/;/g)).pop(); // using pop to grab the last (to avoid semicolons in the string/thing causing problems)
+			
+			// substring value between the equals sign end and the semicolon
+			value = propertyString.substring(equalsMatch.indices[0][1], semicolonMatch.index);
+		}
 		
 		// create property
 		let property = {
 			scope: terms[0],
 			type: terms[1],
 			name: terms[2],
-			value: terms[3].length > 0 ? terms[3] : undefined // only add a value if the fourth element isn't blank
+			value: value
 		};
 		
 		// add to properties
