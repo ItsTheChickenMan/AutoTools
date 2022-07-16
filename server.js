@@ -96,8 +96,6 @@ app.get("/validActions", (req, res) => {
 });
 
 app.get("/globalVariables", (req, res) => {
-	console.log(globalVariableManager);
-	
 	// send the globalVariableManager
 	res.send(JSON.stringify(globalVariableManager)).end();
 });
@@ -131,26 +129,12 @@ app.post("/newPartFile", (req, res) => {
 	res.send("Done").end();
 });
 
-// create a new global variable
-// FIXME: delete or repurpose this
-// NOTE: i'm changing the global variable system, so this isn't important anymore, don't use it
-app.post("/pleaseMakeANewGlobalVariable", (req, res) => {
-	globalVariableManager.push(req.body);
-	
-	res.send("ok, no problem").end();
-});
-
 // start listening
 app.listen(port, function(){
 	console.log("Server is listening, interface is available at localhost:" + port);
 });
 
 // UTILS
-
-// update the values of global variables
-function updateGlobalVariables(globalVariables){
-	
-}
 
 // load an action index from path 
 function loadActionIndex(path){

@@ -41,8 +41,6 @@ public class MecanumDefaultActionIndex extends $[superclass] {
 	public DcMotor.Direction frontRightDirection 	= 	DcMotor.Direction.FORWARD;
 	public DcMotor.Direction backLeftDirection 		= 	DcMotor.Direction.FORWARD;
 	public DcMotor.Direction backRightDirection 	= 	DcMotor.Direction.FORWARD;
-	
-	public String s = "<p>Hi</p><br><button>pres me!</button>";
 	)
 	
   /**
