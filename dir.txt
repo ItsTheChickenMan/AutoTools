@@ -1,0 +1,20 @@
+.	- root directory, contains help and utility files
+
+./assets/											- contains assets used by the server
+
+./client/											- files used for the client GUI
+	./client/static/ 						- statically served files
+		./client/static/scripts/	- contains JS scripts used by the GUI
+		./client/static/images/		- contains images used by the GUI
+		./client/static/style/		- contains stylesheets used by the GUI
+
+./java/												- contains various java files used by the server
+	./java/actions/							- default directory to store action indexes
+	./java/out/									- default directory for generated java files for paths
+	./java/templates/						- directory for java templates used by the server
+
+./parts/											- default directory for PRT files
+
+./saves/											- default directory for saved paths
+
+./scripts/										- directory for scripts used by the server

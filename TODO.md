@@ -9,7 +9,6 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 - Implement the default action index for four wheel mecanum drive (no odometry?)
 - Save/Load paths
 - Save/Load action index and prt file configurations (needs to be added every time the program is restarted rn)
-- Finalize/test global variable implementation
 
 ### Low Priority:
 
@@ -19,7 +18,7 @@ This project has somewhat reached a "functional" state, or at least in theory (b
 
 ### Do For Fun:
 
-- Allow user to download their autonomous as an annotated image of the path (for competition)
+- Allow user to download their autonomous as an annotated image (to show at comp)
 - Sort files a bit better
 - Make README a bit more descriptive and helpful
 - Workaround for bad javascript floats (large amounts of trailing decimals like 108.86399999999999)

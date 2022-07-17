@@ -5,11 +5,16 @@
 // PACKAGE IMPORTS
 const Template = require("./template.js");
 const fs = require("fs");
-const fetch = require("node-fetch");
+const path = require("path");
 const parseListFile = require("./parseListFile.js");
 
+// GLOBALS //
+
+// root dir
+const rootDir = process.cwd();
+
 // the config template, manages all part imports and definitions
-const configTemplate = new Template("./java/templates/Config.template");
+const configTemplate = new Template(path.join(rootDir, "./java/templates/Config.template"));
 
 // parseListFile constants
 let parserCommentChar = '#';
@@ -21,7 +26,7 @@ let parserSubSeparator = ' ';
 // load all imports from PART_IMPORTS.dat (called when the module is loaded, and that's it)
 function loadImports(){
 	// load file
-	fs.readFile("./parts/PART_IMPORTS.dat", {}, (err, data) => {
+	fs.readFile(path.join(rootDir, "./parts/PART_IMPORTS.dat"), {}, (err, data) => {
 		if(err){
 			console.error(err);
 			return;

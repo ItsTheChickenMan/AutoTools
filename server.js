@@ -13,9 +13,6 @@ const parseListFile = require("./scripts/parseListFile.js");
 
 // STATIC GLOBAL VARS
 
-// port for the client window, 8080 by default for now.
-let port = 8080;
-
 // root directory of client files
 const clientDir = "./client/";
 const clientRootDir = path.join(__dirname, clientDir);
@@ -25,6 +22,9 @@ const staticDir = path.join(clientRootDir, "static");
 const app = express();
 
 // NON STATIC GLOBAL VARS
+
+// port for the client window, 8080 by default for now.
+let port = 8080;
 
 // java dirs //
 // directory for java source output
@@ -127,6 +127,11 @@ app.post("/newPartFile", (req, res) => {
 	
 	// let the client know that it's taken care of
 	res.send("Done").end();
+});
+
+// save the user's path
+app.post("/save", (req, res) => {
+	console.log("Saved");
 });
 
 // start listening

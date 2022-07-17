@@ -63,8 +63,14 @@ let m = new Menubar("menu-bar", {
 	items: [
 		{
 			name: "File",
-			itemNames: ["Export"],
+			itemNames: ["Save", "Save As", "Export"],
 			itemActions: [
+				function(){
+					
+				},
+				function(){
+					
+				},
 				function(){
 					if(mainPath){ 
 						mainPath.export("Test");
@@ -283,7 +289,7 @@ function drawBg(){
 	background(backgroundColor);
 }
 
-// check if the mouse was just down (for events which only run when mouse is clocked)
+// check if the mouse was just down (for events which only run when mouse is clicked)
 function updateMouseClicked(){
 	mouseJustDown = mouseIsPressed && wasReleased;
 	wasReleased = !mouseIsPressed;
@@ -292,4 +298,19 @@ function updateMouseClicked(){
 // draw the field
 function drawField(){
 	image(fieldImage, 0, 0, width, height);
+}
+
+// action for when the Save or Save As button is clicked in the menu
+function savePath(name){
+	let jsonPath = mainPath.createServerPayload(name);
+	
+	fetch("/save", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json"
+		},
+		body: jsonPath
+	}).then(res => {
+		alert("Saved");
+	});
 }
