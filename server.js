@@ -18,15 +18,19 @@ const directories = {
 	// root directory of client files
 	clientDir: "./client/",
 	
-	clientRootDir: path.join(__dirname, clientDir),
+	get clientRootDir(){
+		return path.join(__dirname, this.clientDir);
+	},
 	
-	staticDir: path.join(clientRootDir, "static"),
-	
-	// directory for java source output
-	javaOutDir: "./java/out/",
+	get staticDir(){
+		return path.join(this.clientRootDir, "static");
+	},
 	
 	// directory for action indexes
 	javaActionIndexDir: "./java/actions/",
+	
+	// directory for java source output
+	javaOutDir: "./java/out/",
 	
 	// directory for parts
 	partFileDir: "./parts/",
@@ -34,11 +38,6 @@ const directories = {
 	// directory where saves go
 	savesDir: "./saves/"
 };
-
-// root directory of client files
-const clientDir = "./client/";
-const clientRootDir = path.join(__dirname, clientDir);
-const staticDir = path.join(clientRootDir, "static");
 
 // express application
 const app = express();
@@ -48,23 +47,12 @@ const app = express();
 // port for the client window, see settings.txt to change
 let port = 8080;
 
-// java dirs //
-// directory for java source output
-let javaOutDir = "./java/out/";
-
-// directory for action indexes
-// TODO: allow user to change (can't ATM because the server has no way of communicating the directory to the client)
-let javaActionIndexDir = "./java/actions/";
-
-// directory for parts
-let partFileDir = "./parts/";
-
-// directory where saves go
-let savesDir = "./saves/";
-
 // all loaded action indexes
 let actionIndexes = [];
 let availableMethods = [];
+
+// team name
+let teamName = "(No Team Specified)";
 
 /**
 	*	@brief Handles global variables for a path, although it's not necessarily specific to any particular path
@@ -86,10 +74,10 @@ let globalVariableManager = {};
 // PATH TO JAVA SETUP
 
 // load default action index
-loadActionIndex(javaActionIndexDir + "MecanumDefaultActionIndex.java");
+loadActionIndex(path.join(directories.javaActionIndexDir + "MecanumDefaultActionIndex.java"));
 
 // load default part file
-let configTemplate = prt2config("./parts/defaultparts.prt");
+let configTemplate = prt2config(path.join(directories.partFileDir, "defaultparts.prt"));
 
 // SETTINGS
 
@@ -97,20 +85,22 @@ let configTemplate = prt2config("./parts/defaultparts.prt");
 let settings = parseListFile("./settings.txt", '#', /\r?\n/, '=', "key-val");
 
 // store settings into appropriate values
-let teamName = settings.teamName || "(No Team Specified)";
+teamName = settings.teamName;
 port = settings.port;
+directories.javaActionIndexDir = settings.javaActionIndexDir;
 directories.javaOutDir = settings.javaOutDir;
+directories.partFileDir = settings.partFileDir;
 directories.savesDir = settings.savesDir;
 
 // EXPRESS SETUP (done last)
 
 // set static directory (makes serving scripts/stylesheets/etc. easier)
-app.use("/static", express.static(staticDir));
+app.use("/static", express.static(directories.staticDir));
 
 // default path, responds with full client interface
 app.get("/", (req, res) => {
 	res.sendFile("index.html", {
-		root: clientRootDir
+		root: directories.clientRootDir
 	});
 });
 
@@ -120,9 +110,15 @@ app.get("/validActions", (req, res) => {
 	res.send(JSON.stringify(availableMethods)).end();
 });
 
+// return all global variables
 app.get("/globalVariables", (req, res) => {
 	// send the globalVariableManager
 	res.send(JSON.stringify(globalVariableManager)).end();
+});
+
+// return the directories object
+app.get("/directories", (req, res) => {
+	res.send(JSON.stringify(directories)).end();
 });
 
 app.use(express.json());
@@ -132,15 +128,15 @@ app.post("/export", (req, res) => {
 	// update global variables
 	globalVariableManager = req.body.variables;
 	
-	path2java(req.body, javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, globalVariableManager, teamName);
+	path2java(req.body, directories.javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, globalVariableManager, teamName);
 	
 	// send back the folder the source is being exported into
-	res.send(javaOutDir).end();
+	res.send(directories.javaOutDir).end();
 });
 
 // load a new action index from a file when instructed by the client
 app.post("/newActionIndex", (req, res) => {
-	loadActionIndex(javaActionIndexDir + req.body.name);
+	loadActionIndex(path.join(directories.javaActionIndexDir, req.body.name));
 	
 	// let the client know that it's taken care of
 	res.send("Done").end();
@@ -148,7 +144,7 @@ app.post("/newActionIndex", (req, res) => {
 
 // load a new part file from a file when instructed by the client
 app.post("/newPartFile", (req, res) => {
-	configTemplate = prt2config(partFileDir + req.body.name);
+	configTemplate = prt2config(path.join(directories.partFileDir, req.body.name));
 	
 	// let the client know that it's taken care of
 	res.send("Done").end();
@@ -161,6 +157,19 @@ app.post("/save", (req, res) => {
 		res.send("Saved to " + dir).end();
 	})
 	.catch(console.error)
+});
+
+app.post("/getSave", (req, res) => {
+	let savePath = path.join(directories.savesDir, req.body.name);
+	
+	fs.readFile(savePath, {}, (err, data) => {
+		if(err){
+			console.error(err);
+			return;
+		}
+		
+		res.send(data).end();
+	});
 });
 
 // start listening
@@ -197,18 +206,18 @@ function loadActionIndex(path){
 	globalVariableManager[path] = variables;
 }
 
-async function savePath(path){
+async function savePath(_path){
 	// start by creating a new directory if it doesn't exist
-	if(!fs.existsSync(savesDir)){
-		fs.mkdirSync(savesDir);
+	if(!fs.existsSync(directories.savesDir)){
+		fs.mkdirSync(directories.savesDir);
 	}
 	
-	let name = path.name;
+	let name = _path.name;
 	
-	path = JSON.stringify(path);
+	_path = JSON.stringify(_path);
 	
 	// then save the path to a json file
-	fs.writeFileSync(savesDir + name + ".json", path);
+	fs.writeFileSync(path.join(directories.savesDir, name + ".json"), _path);
 	
-	return savesDir;
+	return directories.savesDir;
 }

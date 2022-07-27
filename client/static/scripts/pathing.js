@@ -280,6 +280,33 @@ class Node {
 		});
 	}
 	
+	// add a new action
+	// FIXME: deal with the inefficieny of looking for the action every single time
+	addAction(action){
+		let a = getAction(action[0], Object.keys(action[1]).length);
+		
+		console.log(action);
+		
+		if(a === null) return;
+		
+		let paramString = "(";
+		
+		for(let param of a.params){
+			let value = action[1][param.name];
+			
+			paramString += param.name + "=" + value + ", ";
+		}
+		
+		// remove that pesky comma
+		paramString = paramString.slice(0, -2);
+		
+		paramString += ")";
+		
+		// push action to node
+		this.nodeActions.push(action);
+		this.nodeActionMenu.addItems([a.name + " " + paramString]);
+	}
+	
 	// clickable functions
 	getClickablePosition(){
 		return {
@@ -299,6 +326,13 @@ class Node {
 	setCoords(x, y){
 		this.x = Math.min(Math.max(x, this.minX), this.maxX);
 		this.y = Math.min(Math.max(y, this.minY), this.maxY);
+	}
+	
+	setRealCoords(rx, ry){
+		let x = this.bot.fieldScale.x * rx;
+		let y = this.bot.fieldScale.y * ry;
+		
+		this.setCoords(x, y);
 	}
 	
 	draw(){
@@ -341,6 +375,8 @@ class Path {
 		
 		// name
 		this.name = name; // name of the path when saving
+		
+		this.nodes = [];
 		
 		if(!noInit) this.init();
 	}
@@ -445,10 +481,43 @@ class Path {
 	
 	// kills all associated nodes so that clickables are deleted and then deletes them
 	reset(){
+		if(!this.nodes) return;
+		
 		while(this.nodes.length > 0){
 			let node = this.nodes.pop();
 			
 			node.kill();
+		}
+	}
+	
+	// parse the data from a save into this path
+	loadFromSave(save){
+		console.log(save);
+		
+		// clear node data
+		this.reset();
+		
+		// save name
+		this.name = save.name;
+		
+		// save variables
+		globalVariables = save.variables;
+		
+		// save nodes
+		for(let n of save.nodes){
+			let node = new Node(0, 0, this.bot);
+			
+			// set coords and save actions
+			node.setRealCoords(n.position[0], n.position[1]);
+			
+			for(let a of n.actions){
+				node.addAction(a);
+			}
+			
+			// create a new clickable for node
+			new Clickable(node, nodeContextMenu);
+			
+			this.nodes.push(node);
 		}
 	}
 };
@@ -649,4 +718,14 @@ async function fetchVariables(){
 	// this gets rid of the default, and doesn't cause any problems since the server should send us a complete list every time
 	// the only real issue is that it's somewhat inefficient and would become a big problem if a lot of global variables were to be involved
 	globalListMenu.changeItems(itemNames, itemActions, true); // destructive replacement
+}
+
+function getAction(name, paramCount){
+	for(let action of loadedActions){
+		if(action.name == name && action.params.length == paramCount){
+			return action;
+		}
+	}
+	
+	return null;
 }

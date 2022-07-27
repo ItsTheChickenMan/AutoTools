@@ -66,8 +66,32 @@ let m = new Menubar("menu-bar", {
 	items: [
 		{
 			name: "File",
-			itemNames: ["Save", "Save As", "Export"],
+			itemNames: ["New", "Open", "Save", "Save As", "Export"],
 			itemActions: [
+				function(){
+				},
+				function(mouseEvent){
+					getFile(mouseEvent.clientX, mouseEvent.clientY, directories.savesDir, ".json")
+					.then(selectedSave => {
+						// ask server for save data
+						fetch("/getSave", {
+							method: "POST",
+							headers: {
+								"Content-Type": "application/json",
+							},
+							body: JSON.stringify({
+								name: selectedSave
+							})
+						})
+						.then(res => res.json())
+						.then(saveData => {
+							// load path from data
+							mainPath.loadFromSave(saveData);
+						})
+						.catch(console.error);
+					})
+					.catch(alert);
+				},
 				function(){
 					savePath(mainPath.name);
 				},
@@ -88,86 +112,46 @@ let m = new Menubar("menu-bar", {
 			itemNames: ["Add Action Index", "Add Part File", "See Global Variables"],
 			itemActions: [
 				function(mouseEvent){
-					// prompt user (TODO: decide on standards between making a permanent prompt and using parameters vs. making a temporary prompt?)
-					let actionIndexPrompt = new Prompt({
-						// delete when hidden
-						onHide: function(){ this.kill(); },
-						htmlContent: "<p>NOTE: Action indexes MUST be in ./java/actions/</p><input id=\"action-index-input\" type=\"file\" accept=\".java\" multiple=\"false\"><br/><button id=\"done-button\">Done</button>",
-						js: function(){
-							this.itemContainer.style["background-color"] = "white";
-							
-							let inputElement = document.getElementById("action-index-input");
-							let doneButton = document.getElementById("done-button");
-							let selectedActionIndex = null;
-							
-							inputElement.addEventListener("change", e => {
-								selectedActionIndex = inputElement.files[0].name;
-							});
-							
-							doneButton.addEventListener("click", e => {
-								if(selectedActionIndex){
-									// tell server to add this action index
-									fetch("/newActionIndex", {
-										method: "POST",
-										headers: new Headers({'Content-Type': 'application/json'}),
-										body: JSON.stringify({
-											name: selectedActionIndex
-										})
-									})
-									.then(res => res.text())
-									.then(alert)
-									.then(e => {
-										// re-fetch methods
-										fetchActionsSync();
-									})
-									.catch(alert);
-								}
-								
-								this.hide();
-							});
+					getFile(mouseEvent.clientX, mouseEvent.clientY, directories.javaActionIndexDir, ".java")
+					.then(selectedActionIndex => {
+						if(selectedActionIndex){
+							// tell server to add this action index
+							fetch("/newActionIndex", {
+								method: "POST",
+								headers: new Headers({'Content-Type': 'application/json'}),
+								body: JSON.stringify({
+									name: selectedActionIndex
+								})
+							})
+							.then(res => res.text())
+							.then(alert)
+							.then(e => {
+								// re-fetch methods
+								fetchActionsSync();
+							})
+							.catch(alert);
 						}
-					});
-					
-					actionIndexPrompt.show(mouseEvent.clientX, mouseEvent.clientY);
+					})
+					.catch(console.error);
 				},
 				function(mouseEvent){
-					// prompt user
-					let partFilePrompt = new Prompt({
-						// delete when hidden
-						onHide: function(){ this.kill(); },
-						htmlContent: "<p>NOTE: Part files MUST be in ./parts/</p><input id=\"part-file-input\" type=\"file\" accept=\".prt\" multiple=\"false\"><br/><button id=\"done-button\">Done</button>",
-						js: function(){
-							this.itemContainer.style["background-color"] = "white";
-							
-							let inputElement = document.getElementById("part-file-input");
-							let doneButton = document.getElementById("done-button");
-							let selectedPartFile = null;
-							
-							inputElement.addEventListener("change", e => {
-								selectedPartFile = inputElement.files[0].name;
-							});
-							
-							doneButton.addEventListener("click", e => {
-								if(selectedPartFile){
-									// tell server to add this action index
-									fetch("/newPartFile", {
-										method: "POST",
-										headers: new Headers({'Content-Type': 'application/json'}),
-										body: JSON.stringify({
-											name: selectedPartFile
-										})
-									})
-									.then(res => res.text())
-									.then(alert)
-									.catch(alert);
-								}
-								
-								this.hide();
-							});
+					getFile(mouseEvent.clientX, mouseEvent.clientY, directories.partFileDir, ".prt")
+					.then(selectedPartFile => {
+						if(selectedPartFile){
+							// tell server to add this part file
+							fetch("/newPartFile", {
+								method: "POST",
+								headers: new Headers({'Content-Type': 'application/json'}),
+								body: JSON.stringify({
+									name: selectedPartFile
+								})
+							})
+							.then(res => res.text())
+							.then(alert)
+							.catch(alert);
 						}
-					});
-					
-					partFilePrompt.show(mouseEvent.clientX, mouseEvent.clientY);
+					})
+					.catch(console.error);
 				},
 				function(mouseEvent){
 					// TODO: make show() automatically call suppressHide?  only not doing now bc I'm not sure what the consequences of doing so would be
@@ -229,6 +213,8 @@ function setup(){
 	// synchronously fetch the currently available default actions
 	// TODO: it doesn't really make sense to use async in this case, but synchronous XHR is deprecated so probably switch to fetch() at some point
 	fetchActionsSync();
+	
+	fetchDirectories();
 	
 	// menu logic
 	/*mainCanvas.canvas.addEventListener("contextmenu", e => {
@@ -333,4 +319,55 @@ async function fetchDirectories(){
 	
 	// store
 	directories = o;
+}
+
+// create a prompt for a file and return the name of the selected file
+// x, y = coordinates of prompt
+// type = valid file extension or comma separated list of valid file extensions
+// this function won't resolve until the prompt is hidden, so don't have this block any important threads
+// resolves with the name of the file selected
+async function getFile(x, y, directory, type){
+	return new Promise( (resolve, reject) => {
+		// prompt user
+		let filePrompt = new Prompt({
+			// delete when hidden
+			killOnHide: true,
+			onHide: resolve,
+			htmlContent: "<p>NOTE: File MUST be in " + directory + "</p>",
+			js: function(){
+				this.itemContainer.style["background-color"] = "white";
+				
+				// <input id=\"file-input\" type=\"file\" accept=\".prt\" multiple=\"false\">
+				// <button id=\"done-button\">Done</button>
+				
+				let inputElement = document.createElement("input");
+				let doneButton = document.createElement("button");
+				
+				// stylize
+				inputElement.type = "file";
+				inputElement.accept = type;
+				inputElement.multiple = false;
+				
+				doneButton.textContent = "Done";
+				
+				this.itemContainer.appendChild(inputElement);
+				this.itemContainer.appendChild(document.createElement("br"));
+				this.itemContainer.appendChild(doneButton);
+				
+				let selectedFile = null;
+				
+				inputElement.addEventListener("change", e => {
+					selectedFile = inputElement.files[0].name;
+				});
+				
+				doneButton.addEventListener("click", e => {
+					resolve(selectedFile);
+					
+					this.hide();
+				});
+			}
+		});
+		
+		filePrompt.show(x, y);
+	});
 }

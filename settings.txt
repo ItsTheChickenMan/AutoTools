@@ -8,8 +8,17 @@ port=8080
 # the name of the team using this for use in copyright statements at the beginning of the generated auto
 teamName=FIRST Tech Challenge Team #####
 
+# DIRECTORIES
+# these can be absolute directories (ex: C:/fakepath/Desktop/Folder/) or relative ones (ex: ./java/actions/)
+
+# the directory to store action indexes in (there can only be one directory for this)
+javaActionIndexDir=./java/actions/
+
 # the directory which generated autos output to
 javaOutDir=./java/out/
+
+# the directory where part files are stored
+partFileDir=./parts/
 
 # the directory which saved paths output to
 savesDir=./saves/
