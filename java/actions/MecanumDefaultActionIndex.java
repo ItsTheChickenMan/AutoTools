@@ -37,10 +37,10 @@ public class MecanumDefaultActionIndex extends $[superclass] {
 	$(globals,
 	public double motorTpr = 0; // no default
 	
-	public DcMotor.Direction frontLeftDirection 	= 	DcMotor.Direction.FORWARD;
-	public DcMotor.Direction frontRightDirection 	= 	DcMotor.Direction.FORWARD;
-	public DcMotor.Direction backLeftDirection 		= 	DcMotor.Direction.FORWARD;
-	public DcMotor.Direction backRightDirection 	= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction frontLeftMotorDirection 	= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction frontRightMotorDirection 	= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction backLeftMotorDirection 		= 	DcMotor.Direction.FORWARD;
+	public DcMotor.Direction backRightMotorDirection 	= 	DcMotor.Direction.FORWARD;
 	)
 	
   /**

@@ -13,6 +13,28 @@ const parseListFile = require("./scripts/parseListFile.js");
 
 // STATIC GLOBAL VARS
 
+// all directories
+const directories = {
+	// root directory of client files
+	clientDir: "./client/",
+	
+	clientRootDir: path.join(__dirname, clientDir),
+	
+	staticDir: path.join(clientRootDir, "static"),
+	
+	// directory for java source output
+	javaOutDir: "./java/out/",
+	
+	// directory for action indexes
+	javaActionIndexDir: "./java/actions/",
+	
+	// directory for parts
+	partFileDir: "./parts/",
+	
+	// directory where saves go
+	savesDir: "./saves/"
+};
+
 // root directory of client files
 const clientDir = "./client/";
 const clientRootDir = path.join(__dirname, clientDir);
@@ -23,7 +45,7 @@ const app = express();
 
 // NON STATIC GLOBAL VARS
 
-// port for the client window, 8080 by default for now.
+// port for the client window, see settings.txt to change
 let port = 8080;
 
 // java dirs //
@@ -36,6 +58,9 @@ let javaActionIndexDir = "./java/actions/";
 
 // directory for parts
 let partFileDir = "./parts/";
+
+// directory where saves go
+let savesDir = "./saves/";
 
 // all loaded action indexes
 let actionIndexes = [];
@@ -72,10 +97,10 @@ let configTemplate = prt2config("./parts/defaultparts.prt");
 let settings = parseListFile("./settings.txt", '#', /\r?\n/, '=', "key-val");
 
 // store settings into appropriate values
-let teamName = settings.teamName || "No Team Specified";
+let teamName = settings.teamName || "(No Team Specified)";
 port = settings.port;
-javaOutDir = settings.javaOutDir;
-
+directories.javaOutDir = settings.javaOutDir;
+directories.savesDir = settings.savesDir;
 
 // EXPRESS SETUP (done last)
 
@@ -131,7 +156,11 @@ app.post("/newPartFile", (req, res) => {
 
 // save the user's path
 app.post("/save", (req, res) => {
-	console.log("Saved");
+	savePath(req.body)
+	.then(dir => {
+		res.send("Saved to " + dir).end();
+	})
+	.catch(console.error)
 });
 
 // start listening
@@ -166,4 +195,20 @@ function loadActionIndex(path){
 	let variables = javautils.getClassProperties(file, ["protected", "private"]); // ignore protected or private methods
 	
 	globalVariableManager[path] = variables;
+}
+
+async function savePath(path){
+	// start by creating a new directory if it doesn't exist
+	if(!fs.existsSync(savesDir)){
+		fs.mkdirSync(savesDir);
+	}
+	
+	let name = path.name;
+	
+	path = JSON.stringify(path);
+	
+	// then save the path to a json file
+	fs.writeFileSync(savesDir + name + ".json", path);
+	
+	return savesDir;
 }

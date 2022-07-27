@@ -335,10 +335,17 @@ class Path {
 	// url to send post request of path over for parsing/export
 	PATH_EXPORT_URL = "/export/";
 	
-	constructor(bot){
+	constructor(bot, name, noInit){
 		// bot we're pathing for
 		this.bot = bot;
 		
+		// name
+		this.name = name; // name of the path when saving
+		
+		if(!noInit) this.init();
+	}
+	
+	init(){
 		// actual path
 		this.nodes = [new Node(0, 0, this.bot)];
 		
@@ -350,6 +357,9 @@ class Path {
 	}
 	
 	draw(){
+		// check for nodes
+		if(!this.nodes) return;
+		
 		let pnode;
 		
 		for(let i = 0; i < this.nodes.length; i++){
@@ -372,6 +382,9 @@ class Path {
 	}
 	
 	update(){
+		// check for nodes
+		if(!this.nodes) return;
+		
 		if(this.activeNode >= 0){
 			let node = this.nodes[this.activeNode];
 			
@@ -401,9 +414,9 @@ class Path {
 	}
 	
 	// abstract this path into a table of information
-	createServerPayload(name){
+	createServerPayload(){
 		let payload = {
-			name: name,
+			name: this.name,
 			nodes: [],
 			variables: globalVariables
 		};
@@ -412,15 +425,11 @@ class Path {
 			payload.nodes.push(this.nodes[i].toPayload());
 		}
 		
-		return payload;
+		return JSON.stringify(payload);
 	}
 	
-	export(name){
-		let payload = this.createServerPayload(name);
-		
-		payload.name = name;
-		
-		payload = JSON.stringify(payload);
+	export(){
+		let payload = this.createServerPayload();
 		
 		fetch(window.location.origin + this.PATH_EXPORT_URL, {
 			method: "POST",
@@ -434,10 +443,12 @@ class Path {
 		.catch(console.error);
 	}
 	
-	// kills all associated nodes so that clickables are deleted
-	destroy(){
-		for(let i = 0; i < this.nodes.length; i++){
-			this.nodes[i].kill();
+	// kills all associated nodes so that clickables are deleted and then deletes them
+	reset(){
+		while(this.nodes.length > 0){
+			let node = this.nodes.pop();
+			
+			node.kill();
 		}
 	}
 };

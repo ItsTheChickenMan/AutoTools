@@ -8,5 +8,8 @@ port=8080
 # the name of the team using this for use in copyright statements at the beginning of the generated auto
 teamName=FIRST Tech Challenge Team #####
 
-# the directory which autos output to
+# the directory which generated autos output to
 javaOutDir=./java/out/
+
+# the directory which saved paths output to
+savesDir=./saves/

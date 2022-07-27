@@ -3,6 +3,9 @@
 
 // GLOBALS
 
+// misc //
+let directories = {};
+
 // canvas globals //
 // main canvas used in the interface
 let mainCanvas = null; // default value is null so it's known that the canvas hasn't been created yet
@@ -66,10 +69,10 @@ let m = new Menubar("menu-bar", {
 			itemNames: ["Save", "Save As", "Export"],
 			itemActions: [
 				function(){
-					
+					savePath(mainPath.name);
 				},
 				function(){
-					
+					savePath(mainPath.name);
 				},
 				function(){
 					if(mainPath){ 
@@ -188,17 +191,16 @@ let m = new Menubar("menu-bar", {
 
 // context menu which appears when the user right clicks on the canvas
 let contextMenu = new Menu({
-	itemNames: ["Start Pathing", "End Pathing", "Delete Path"],
+	itemNames: ["Start Pathing", "End Pathing", "Reset Path"],
 	itemActions: [
 		function(){
-			mainPath = new Path(bot);
+			if(mainPath) mainPath.init();
 		},
 		function(){
 			if(mainPath) mainPath.stopConstructing();
 		},
 		function(){
-			mainPath.destroy();
-			mainPath = null;
+			if(mainPath) mainPath.reset();
 		}
 	]
 });
@@ -280,6 +282,8 @@ function initGlobals(){
 	bot = new Bot({
 		scale: fieldScale
 	});
+	
+	mainPath = new Path(bot, null, true);
 }
 
 // draws background
@@ -302,7 +306,13 @@ function drawField(){
 
 // action for when the Save or Save As button is clicked in the menu
 function savePath(name){
-	let jsonPath = mainPath.createServerPayload(name);
+	// if name isn't there, prompt for it
+	if(!name){
+		name = prompt("Enter a unique name for the path:");
+		mainPath.name = name;
+	}
+	
+	let jsonPath = mainPath.createServerPayload();
 	
 	fetch("/save", {
 		method: "POST",
@@ -313,4 +323,14 @@ function savePath(name){
 	}).then(res => {
 		alert("Saved");
 	});
+}
+
+// fetch directories and store them into the directories object
+async function fetchDirectories(){
+	// fetch
+	let f = await fetch("/directories");
+	let o = await f.json();
+	
+	// store
+	directories = o;
 }
