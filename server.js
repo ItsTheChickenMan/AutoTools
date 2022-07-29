@@ -104,10 +104,18 @@ app.get("/", (req, res) => {
 	});
 });
 
+// favicon
+app.get("/favicon.ico", (req, res) => {
+	res.sendFile("favicon.ico", {
+		root: "./assets/images/"
+	});
+});
+
 // return a list of all current available actions from ActionIndexs
 app.get("/validActions", (req, res) => {
 	// send available methods to user...that's it
 	res.send(JSON.stringify(availableMethods)).end();
+	//res.send(JSON.stringify(actionIndexes)).end();
 });
 
 // return all global variables
