@@ -114,8 +114,8 @@ app.get("/favicon.ico", (req, res) => {
 // return a list of all current available actions from ActionIndexs
 app.get("/validActions", (req, res) => {
 	// send available methods to user...that's it
-	res.send(JSON.stringify(availableMethods)).end();
-	//res.send(JSON.stringify(actionIndexes)).end();
+	//res.send(JSON.stringify(availableMethods)).end();
+	res.send(JSON.stringify(actionIndexes)).end();
 });
 
 // return all global variables
@@ -144,10 +144,10 @@ app.post("/export", (req, res) => {
 
 // load a new action index from a file when instructed by the client
 app.post("/newActionIndex", (req, res) => {
-	loadActionIndex(path.join(directories.javaActionIndexDir, req.body.name));
+	let status = loadActionIndex(path.join(directories.javaActionIndexDir, req.body.name));
 	
 	// let the client know that it's taken care of
-	res.send("Done").end();
+	res.send(status).end();
 });
 
 // load a new part file from a file when instructed by the client
@@ -187,10 +187,15 @@ app.listen(port, function(){
 
 // UTILS
 
-// load an action index from path 
-function loadActionIndex(path){
+// load an action index from path and returns a string representing the status
+function loadActionIndex(_path){
+	// check if action index has already been loaded
+	if(actionIndexLoaded(_path)){
+		return "Action index already loaded";
+	}
+	
 	// load file
-	let file = fs.readFileSync(path).toString();
+	let file = fs.readFileSync(_path).toString();
 	
 	// get all methods
 	let methods = javautils.getClassMethods(file, ["protected", "private"]); // ignore protected or private methods
@@ -200,7 +205,7 @@ function loadActionIndex(path){
 	let index = {
 		classname: cni[0],
 		superclassname: cni[1],
-		path: path,
+		path: _path,
 		methods: methods
 	};
 	
@@ -211,7 +216,9 @@ function loadActionIndex(path){
 	// load global variables
 	let variables = javautils.getClassProperties(file, ["protected", "private"]); // ignore protected or private methods
 	
-	globalVariableManager[path] = variables;
+	globalVariableManager[_path] = variables;
+	
+	return "Done";
 }
 
 async function savePath(_path){
@@ -228,4 +235,9 @@ async function savePath(_path){
 	fs.writeFileSync(path.join(directories.savesDir, name + ".json"), _path);
 	
 	return directories.savesDir;
+}
+
+function actionIndexLoaded(_path){
+	// loop through each action index and check for path
+	return actionIndexes.some(actionIndex => actionIndex.path == _path);
 }

@@ -127,7 +127,7 @@ let m = new Menubar("menu-bar", {
 							.then(alert)
 							.then(e => {
 								// re-fetch methods
-								fetchActionsSync();
+								fetchActionsAndVariables();
 							})
 							.catch(alert);
 						}
@@ -210,10 +210,10 @@ function setup(){
 	// initialize clickables
 	initClickables(mainCanvas.canvas);
 	
-	// synchronously fetch the currently available default actions
-	// TODO: it doesn't really make sense to use async in this case, but synchronous XHR is deprecated so probably switch to fetch() at some point
-	fetchActionsSync();
+	// fetch the currently available default actions
+	fetchActionsAndVariables();
 	
+	// fetch directories
 	fetchDirectories();
 	
 	// menu logic

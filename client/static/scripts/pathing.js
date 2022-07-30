@@ -21,7 +21,7 @@ let nodeContextMenu = new Menu({
 			// temporary fix for nodeActionMenu not showing up
 			n.nodeActionMenu.suppressHide = true;
 			
-			n.nodeActionMenu.show(e.clientX, e.clientY, [n]);
+			n.nodeActionMenu.show(e.clientX, e.clientY, [n, mainPath]);
 		},
 		function(e, n){ // insert before
 			// insert a new node before n and set mainPath's active node to it
@@ -374,7 +374,11 @@ class Path {
 		// name
 		this.name = name; // name of the path when saving
 		
+		// nodes
 		this.nodes = [];
+		
+		// action indexes which this path uses
+		this.actionIndexNames = [];
 		
 		if(!noInit) this.init();
 	}
@@ -452,7 +456,8 @@ class Path {
 		let payload = {
 			name: this.name,
 			nodes: [],
-			variables: globalVariables
+			variables: globalVariables,
+			actionIndexNames: this.actionIndexNames
 		};
 		
 		for(let i = 0; i < this.nodes.length; i++){
@@ -516,155 +521,33 @@ class Path {
 			this.nodes.push(node);
 		}
 	}
+	
+	addActionIndex(actionIndex){
+		const name = actionIndex.classname;
+		
+		if(!this.actionIndexNames.includes(name)) this.actionIndexNames.push(name);
+	}
 };
 
 // UTILS
-
-// fetch available actions from server (also does global variables)
-// TODO: messy, fix up a bit
-// TODO: also make this function async
-function fetchActionsSync(){
-	let request = new XMLHttpRequest();
-	request.open('GET', '/validActions', false); // `false` makes the request synchronous
-	request.send(null);
-
-	if (request.status === 200) {
-		// load contents into json object
-		loadedActions = JSON.parse(request.responseText);
-		
-		console.log(loadedActions);
-		
-		// format for node action list
-		let formattedActionNames = [];
-		
-		let itemActions = [];
-		
-		// create actions for each node action, specifically to add that node action to a node
-		// TODO: fix some of the headache inducing variable names in this bloated function
-		for(let a of loadedActions){
-			formattedActionNames.push(a.name + " (" + a.params.length + " params)");
-			let closeButtonName = "close-button-" + a.name + "-" + a.params.length + "-parameter-prompt";
-			
-			itemActions.push(
-				function(e, n){
-					// prompt for parameters
-					new Prompt({
-						// one time prompt, delete when hidden
-						// this is just in case the user cancels the prompt, which would leave the html in the page
-						killOnHide: true,
-						args: [a, n],
-						htmlContent: "<button id=\"" + closeButtonName + "\">Done</button>", // rest is created dynamically by js
-						js: function(a, n){
-							this.itemContainer.style["background-color"] = "white";
-							
-							let closeButton = document.getElementById(closeButtonName);
-							
-							let completedParams = {};
-							
-							let idText = "-input";
-							
-							closeButton.addEventListener("click", e => {
-								let paramString = "(";
-								
-								for(let param of a.params){
-									let input = document.getElementById(param.name + idText);
-									
-									let value = input.value;
-									
-									// validate input
-									// FIXME: should validate input a bit more thoroughly
-									
-									// check for blank values
-									if(value.length <= 0){
-										// close prompt without continuing
-										this.hide();
-										return;
-									}
-									
-									// check for globals
-									// FIXME: adapt to new system
-									/*if(globalListMenu.itemNames.includes(value)){
-										// if global type doesn't match, alert user and don't close prompt
-										let global = globalVariables[value];
-										
-										if(param.type != global.type){
-											alert(global.name + " can't be used for " + param.name + " because the types don't match");
-											return;
-										}
-									}*/
-									
-									// add to completed params
-									completedParams[param.name] = value;
-									
-									paramString += param.name + "=" + value + ", ";
-								}
-								
-								// remove that pesky comma
-								paramString = paramString.slice(0, -2);
-								
-								paramString += ")";
-								
-								// push action to node
-								n.nodeActions.push([a.name, completedParams]);
-								n.nodeActionMenu.addItems([a.name + " " + paramString]);
-								
-								this.hide();
-							});
-		
-							// for each parameter, create a label and an input box
-							for(let i = 0; i < a.params.length; i++){
-								let param = a.params[i];
-								
-								let label = document.createElement("label");
-								let input = document.createElement("input");
-								let br = document.createElement("br");
-								
-								let id = param.name + idText;
-								
-								input.id = id;
-								label.for = id;
-								label.textContent = param.name + " (" + param.type + ") :";
-								
-								// TODO: creating "br" each time is probably bad somehow.  I'm not sure how, but I can feel it
-								this.itemContainer.insertBefore(br, closeButton);
-								this.itemContainer.insertBefore(input, br);
-								this.itemContainer.insertBefore(label, input);
-							}
-						}
-					}).show(e.clientX, e.clientY);
-				}
-			);
-		}
-		
-		nodeActionListMenu = new Menu({
-			// function names tend to be longer, so override default width
-			width: "300px",
-			// these can get long, so add a height
-			height: "250px",
-			itemNames: formattedActionNames,
-			itemActions: itemActions
-		});
-		
-		// fetch global variables (async)
-		fetchVariables();
-	}
-}
 
 // fetch available action indexes and global variables
 // does so asynchronously
 async function fetchActionsAndVariables(){
 	// initiate fetch request
-	let res = await fetch("/validActions");
+	const res = await fetch("/validActions");
 	
 	// parse
-	let actionIndexes = await res.json();
+	const actionIndexes = await res.json();
 	
 	// names of each action formatted to show in the pop up menu
 	let formattedActionNames = [];
-		
+	
 	// actions for each item in the menu (to add the node action to the node selected)
 	let itemActions = [];
-		
+	
+	console.log(actionIndexes);
+	
 	// loop through each action index and parse actions
 	for(let actionIndex of actionIndexes){
 		let actions = actionIndex.methods;
@@ -678,20 +561,17 @@ async function fetchActionsAndVariables(){
 			
 			itemActions.push(
 				function(e, n){
-					console.log(e);
-					console.log(n);
-					
 					// prompt for parameters
 					new Prompt({
 						// one time prompt, delete when hidden
 						// this is just in case the user cancels the prompt, which would leave the html in the page
 						killOnHide: true,
 						args: [action, n],
-						htmlContent: "<button id=\"" + closeButtonName + "\">Done</button>", // rest is created dynamically by js
+						htmlContent: "<button id=\"" + closeButtonId + "\">Done</button>", // rest is created dynamically by js
 						js: function(a, n){
 							this.itemContainer.style["background-color"] = "white";
 							
-							let closeButton = document.getElementById(closeButtonName);
+							let closeButton = document.getElementById(closeButtonId);
 							
 							let completedParams = {};
 							
@@ -742,6 +622,9 @@ async function fetchActionsAndVariables(){
 								n.nodeActions.push([a.name, completedParams]);
 								n.nodeActionMenu.addItems([a.name + " " + paramString]);
 								
+								// add this action index to path
+								mainPath.addActionIndex(actionIndex); 
+
 								this.hide();
 							});
 		
