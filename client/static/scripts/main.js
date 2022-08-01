@@ -115,21 +115,7 @@ let m = new Menubar("menu-bar", {
 					getFile(mouseEvent.clientX, mouseEvent.clientY, directories.javaActionIndexDir, ".java")
 					.then(selectedActionIndex => {
 						if(selectedActionIndex){
-							// tell server to add this action index
-							fetch("/newActionIndex", {
-								method: "POST",
-								headers: new Headers({'Content-Type': 'application/json'}),
-								body: JSON.stringify({
-									name: selectedActionIndex
-								})
-							})
-							.then(res => res.text())
-							.then(alert)
-							.then(e => {
-								// re-fetch methods
-								fetchActionsAndVariables();
-							})
-							.catch(alert);
+							newActionIndex(selectedActionIndex).then(alert).catch(console.error);
 						}
 					})
 					.catch(console.error);
@@ -295,6 +281,9 @@ function savePath(name){
 	// if name isn't there, prompt for it
 	if(!name){
 		name = prompt("Enter a unique name for the path:");
+		
+		if(!name) return;
+		
 		mainPath.name = name;
 	}
 	

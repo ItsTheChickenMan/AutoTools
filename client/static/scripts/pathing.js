@@ -3,8 +3,11 @@
 // only one path at a time (?)
 let mainPath;
 
-// all currently loaded actions
-let loadedActions = []; // actions in full table form
+// all currently loaded action indexes
+let loadedActionIndexes = {};
+
+// all currently available methods
+let loadedActions = [];
 
 // MENUS
 
@@ -468,8 +471,10 @@ class Path {
 	}
 	
 	export(){
+		// get server payload
 		let payload = this.createServerPayload();
 		
+		// send to server
 		fetch(window.location.origin + this.PATH_EXPORT_URL, {
 			method: "POST",
 			headers: new Headers({'Content-Type': 'application/json'}),
@@ -477,6 +482,7 @@ class Path {
 		})
 		.then(res => { if(res.status == 200) return res.text() })
 		.then(outDir => {
+			// alert user
 			alert("Exporting to " + outDir + name);
 		})
 		.catch(console.error);
@@ -494,7 +500,19 @@ class Path {
 	}
 	
 	// parse the data from a save into this path
-	loadFromSave(save){
+	async loadFromSave(save){
+		// save action index names
+		this.actionIndexNames = save.actionIndexNames;
+		
+		// fetch any unfetched action indexes
+		let names = Object.keys(loadedActionIndexes);
+		
+		let unloadedNames = this.actionIndexNames.filter(name => !names.includes(name));
+		
+		for(let name of unloadedNames){
+			await newActionIndex(name + ".java");
+		}
+		
 		// clear node data
 		this.reset();
 		
@@ -531,9 +549,41 @@ class Path {
 
 // UTILS
 
-// fetch available action indexes and global variables
-// does so asynchronously
+// fetch actions and variables
 async function fetchActionsAndVariables(){
+	await fetchActions();
+	
+	await fetchVariables();
+}
+
+// load a new action index
+async function newActionIndex(name){
+	if(!name) return;
+	
+	// tell server to add this action index
+	let req = await fetch("/newActionIndex", {
+		method: "POST",
+		headers: new Headers({'Content-Type': 'application/json'}),
+		body: JSON.stringify({
+			name: name
+		})
+	});
+	
+	let res = await req.text();
+
+	// re-fetch methods
+	await fetchActions();
+	
+	return res;
+}
+
+// fetch available action indexes
+// does so asynchronously
+async function fetchActions(){
+	// clear loads
+	loadedActionIndexes = {};
+	loadedActions = [];
+	
 	// initiate fetch request
 	const res = await fetch("/validActions");
 	
@@ -546,11 +596,15 @@ async function fetchActionsAndVariables(){
 	// actions for each item in the menu (to add the node action to the node selected)
 	let itemActions = [];
 	
-	console.log(actionIndexes);
-	
 	// loop through each action index and parse actions
 	for(let actionIndex of actionIndexes){
 		let actions = actionIndex.methods;
+		
+		// add action index to loadedActionIndexes
+		loadedActionIndexes[actionIndex.classname] = actionIndex;
+		
+		// add actions to loadedActions
+		loadedActions.push(...actions);
 		
 		for(let action of actions){
 			// format action name
@@ -732,9 +786,13 @@ async function fetchVariables(){
 	globalListMenu.changeItems(itemNames, itemActions, true); // destructive replacement
 }
 
+// search for an action in loadedActionIndexes and return it if it exists
 function getAction(name, paramCount){
-	for(let action of loadedActions){
-		if(action.name == name && action.params.length == paramCount){
+	// reverse the original array so that the furthest actions in the inheritance chain take priority over the same methods earlier in the chain (because they override earlier methods)
+	let actions = loadedActions.slice().reverse();
+	
+	for(let action of actions){
+		if(action.name === name && action.params.length === paramCount){
 			return action;
 		}
 	}

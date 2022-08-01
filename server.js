@@ -136,7 +136,10 @@ app.post("/export", (req, res) => {
 	// update global variables
 	globalVariableManager = req.body.variables;
 	
-	path2java(req.body, directories.javaOutDir + req.body.name + "/", req.body.name, actionIndexes, configTemplate, globalVariableManager, teamName);
+	// get only the action indexes we need
+	let a = getRequiredActionIndexes(req.body.actionIndexNames);
+	
+	path2java(req.body, directories.javaOutDir + req.body.name + "/", req.body.name, a, configTemplate, globalVariableManager, teamName);
 	
 	// send back the folder the source is being exported into
 	res.send(directories.javaOutDir).end();
@@ -240,4 +243,8 @@ async function savePath(_path){
 function actionIndexLoaded(_path){
 	// loop through each action index and check for path
 	return actionIndexes.some(actionIndex => actionIndex.path == _path);
+}
+
+function getRequiredActionIndexes(actionIndexNames){
+	return actionIndexes.filter(actionIndex => actionIndexNames.includes(actionIndex.classname));
 }
